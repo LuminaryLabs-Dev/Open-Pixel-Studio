@@ -440,6 +440,37 @@ const maxHistory=24, historyMemoryLimit=80*1024*1024;
 const documentMemoryLimit=96*1024*1024;
 function fitsMemoryBudget(width=project.width,height=project.height,frames=project.frames.length,layers=project.layers.length){return width*height*4*frames*layers<=documentMemoryLimit}
 let autosaveTimer=null,toastTimer=null,renderCount=0,animationTime=0,animationLast=0;
+let changeSequence=0, writeQueue=Promise.resolve(), projectDBPromise=null;
+const LEGACY_AUTOSAVE_KEY='nexus-pixel-studio-autosave-v1';
+function openProjectDB(){
+ if(!window.indexedDB)return Promise.resolve(null);
+ if(!projectDBPromise)projectDBPromise=new Promise(resolve=>{
+  try{const request=window.indexedDB.open('open-pixel-studio-v110',1);
+   request.onupgradeneeded=()=>{if(!request.result.objectStoreNames.contains('projects'))request.result.createObjectStore('projects')};
+   request.onsuccess=()=>resolve(request.result);request.onerror=()=>resolve(null);request.onblocked=()=>resolve(null);
+  }catch(error){console.warn('IndexedDB unavailable',error);resolve(null)}
+ });
+ return projectDBPromise;
+}
+async function saveBrowserSnapshot(snapshot){
+ const db=await openProjectDB();
+ if(db){try{await new Promise((resolve,reject)=>{
+  const tx=db.transaction('projects','readwrite');tx.objectStore('projects').put(snapshot,'autosave');
+  tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error||Error('IndexedDB transaction failed'));
+  tx.onabort=()=>reject(tx.error||Error('IndexedDB transaction aborted'));
+ });return 'IndexedDB'}catch(error){console.warn('IndexedDB autosave failed',error)}}
+ try{localStorage.setItem(LEGACY_AUTOSAVE_KEY,JSON.stringify(snapshot));return 'localStorage'}
+ catch(error){console.warn('Browser autosave unavailable',error);throw error}
+}
+async function loadBrowserSnapshot(){
+ const db=await openProjectDB();
+ if(db){try{const data=await new Promise((resolve,reject)=>{
+  const tx=db.transaction('projects','readonly'),req=tx.objectStore('projects').get('autosave');
+  req.onsuccess=()=>resolve(req.result||null);req.onerror=()=>reject(req.error||Error('IndexedDB read failed'));
+ });if(data)return data}catch(error){console.warn('IndexedDB recovery failed',error)}}
+ try{const data=localStorage.getItem(LEGACY_AUTOSAVE_KEY);return data?JSON.parse(data):null}
+ catch(error){console.warn('Legacy browser storage unavailable',error);return null}
+}
 function selectedLayer(){return project.layers[state.layer]}
 function selectedCel(){return selectedLayer().cels[state.frame]}
 function copyCel(c){const copy=makeCanvas(c.width,c.height);ctx(copy).drawImage(c,0,0);return copy}
@@ -450,8 +481,15 @@ function checkpoint(){history.push(capture());future=[];while(history.length>max
 function undo(){if(!history.length)return;future.push(capture());restore(history.pop());updateUndoButtons();toast('Undo applied')}
 function redo(){if(!future.length)return;history.push(capture());restore(future.pop());updateUndoButtons();toast('Redo applied')}
 function updateUndoButtons(){$('undoBtn').disabled=!history.length;$('redoBtn').disabled=!future.length}
-function changed(){state.dirty=true;$('dirtyDot').classList.add('dirty');$('saveStatus').textContent='Saving…';clearTimeout(autosaveTimer);autosaveTimer=setTimeout(autosave,800)}
-function autosave(){try{localStorage.setItem('nexus-pixel-studio-autosave-v1',JSON.stringify(serialize()));state.dirty=false;$('dirtyDot').classList.remove('dirty');$('saveStatus').textContent='Saved locally'}catch(e){$('saveStatus').textContent='Save project to file';console.warn('Autosave skipped:',e)}}
+function changed(){changeSequence++;state.dirty=true;$('dirtyDot').classList.add('dirty');$('saveStatus').textContent='Unsaved changes';clearTimeout(autosaveTimer);autosaveTimer=setTimeout(autosave,800)}
+function autosave(){
+ clearTimeout(autosaveTimer);
+ const version=changeSequence;
+ let snapshot;try{snapshot=serialize()}catch(error){$('saveStatus').textContent='Save project to file';console.warn('Autosave serialization failed',error);return}
+ writeQueue=writeQueue.catch(()=>{}).then(()=>saveBrowserSnapshot(snapshot));
+ writeQueue.then(target=>{if(version!==changeSequence)return;state.dirty=false;$('dirtyDot').classList.remove('dirty');$('saveStatus').textContent=target==='IndexedDB'?'Saved in browser':'Saved locally'})
+  .catch(error=>{if(version===changeSequence)$('saveStatus').textContent='Save project to file';console.warn('Autosave skipped:',error)});
+}
 function serialize(){return {...Object.fromEntries(['format','version','name','width','height','frames','paletteKey','palette'].map(k=>[k,project[k]])),layers:project.layers.map(l=>({id:l.id,name:l.name,visible:l.visible,locked:l.locked,opacity:l.opacity,cels:l.cels.map(c=>c.toDataURL('image/png'))}))}}
 async function loadSerialized(data){
  if(data?.format!=='NexusPixelStudio'||!Number.isInteger(data.width)||!Number.isInteger(data.height)||data.width<1||data.height<1||data.width>512||data.height>512||!Array.isArray(data.frames)||!data.frames.length||data.frames.length>128||!Array.isArray(data.layers)||!data.layers.length||data.layers.length>64)throw Error('Invalid or unsupported Nexus Pixel project');
@@ -463,9 +501,9 @@ async function loadSerialized(data){
 }
 function composeFrame(index,onlyVisible=true){const out=makeCanvas(project.width,project.height),c=ctx(out);for(const l of project.layers){if(onlyVisible&&!l.visible)continue;c.globalAlpha=l.opacity;c.drawImage(l.cels[index],0,0)}c.globalAlpha=1;return out}
 function celHasPixels(canvas){const data=ctx(canvas).getImageData(0,0,canvas.width,canvas.height).data;for(let i=3;i<data.length;i+=4)if(data[i])return true;return false}
-function renderCanvas(){const w=project.width,h=project.height;const main=$('renderCanvas'),oc=$('onionCanvas');if(main.width!==w||main.height!==h){main.width=oc.width=$('interactiveCanvas').width=w;main.height=oc.height=$('interactiveCanvas').height=h}const m=ctx(main);m.clearRect(0,0,w,h);m.drawImage(composeFrame(state.frame),0,0);
+function renderCanvas(){const w=project.width,h=project.height;const main=$('renderCanvas'),oc=$('onionCanvas');if(main.width!==w||main.height!==h){main.width=oc.width=$('interactiveCanvas').width=w;main.height=oc.height=$('interactiveCanvas').height=h}const composed=composeFrame(state.frame);const m=ctx(main);m.clearRect(0,0,w,h);m.drawImage(composed,0,0);
  const o=ctx(oc);o.clearRect(0,0,w,h);if(state.onion&&project.frames.length>1){o.globalAlpha=.28;o.drawImage(composeFrame((state.frame-1+project.frames.length)%project.frames.length),0,0);o.globalAlpha=.13;o.drawImage(composeFrame((state.frame+1)%project.frames.length),0,0);o.globalAlpha=1}
- const p=$('previewCanvas');if(p.width!==w||p.height!==h){p.width=w;p.height=h}const pc=ctx(p);pc.clearRect(0,0,w,h);pc.drawImage(composeFrame(state.frame),0,0);$('previewFrame').textContent=`${String(state.frame+1).padStart(2,'0')} / ${String(project.frames.length).padStart(2,'0')}`;renderCount++}
+ const p=$('previewCanvas');if(p.width!==w||p.height!==h){p.width=w;p.height=h}const pc=ctx(p);pc.clearRect(0,0,w,h);pc.drawImage(composed,0,0);$('previewFrame').textContent=`${String(state.frame+1).padStart(2,'0')} / ${String(project.frames.length).padStart(2,'0')}`;renderCount++}
 function updateArtboard(){const w=project.width*state.zoom,h=project.height*state.zoom;const a=$('artboard');a.style.width=w+'px';a.style.height=h+'px';a.style.marginLeft=state.panX+'px';a.style.marginTop=state.panY+'px';$('zoomValue').textContent=Math.round(state.zoom*100)+'%';const g=$('pixelGrid');g.classList.toggle('on',state.grid&&state.zoom>=7);g.style.backgroundImage='linear-gradient(90deg,#0b162a41 1px, transparent 1px),linear-gradient(#0b162a41 1px, transparent 1px)';g.style.backgroundSize=`${state.zoom}px ${state.zoom}px`;g.style.backgroundPosition='0 0';updateSelectionBox()}
 function updateSelectionBox(){const s=state.selection,box=$('selectionBox');if(!s||s.w<1||s.h<1){box.hidden=true;return}box.hidden=false;box.style.left=s.x*state.zoom+'px';box.style.top=s.y*state.zoom+'px';box.style.width=s.w*state.zoom+'px';box.style.height=s.h*state.zoom+'px'}
 function setZoom(value,around=null){state.zoom=clamp(Math.round(value),2,32);updateArtboard()}
@@ -568,7 +606,21 @@ function moveLayer(delta){const next=state.layer+delta;if(next<0||next>=project.
 function resizeCanvas(w,h){if(w===project.width&&h===project.height)return;if(!fitsMemoryBudget(w,h,project.frames.length,project.layers.length))return toast('New canvas would exceed memory limit');checkpoint();for(const l of project.layers)l.cels=l.cels.map(c=>{const out=makeCanvas(w,h);ctx(out).drawImage(c,0,0);return out});project.width=w;project.height=h;state.selection=null;refreshAll();fit();changed();toast(`Canvas resized to ${w} × ${h}`)}
 function newDocument(w,h,name,white){project=blankProject(w,h,name,white);history=[];future=[];state.frame=0;state.layer=0;state.selection=null;state.panX=state.panY=0;stopPlayback();refreshAll();fit();changed();toast('New sprite created')}
 function togglePlay(){state.playing=!state.playing;animationLast=performance.now();animationTime=0;updateInspector()}
-function animationLoop(timestamp){if(state.playing&&project){animationTime+=Math.min(250,timestamp-animationLast||0);while(animationTime>=project.frames[state.frame].duration){animationTime-=project.frames[state.frame].duration;state.frame=(state.frame+1)%project.frames.length;renderCanvas();updateTimeline();updateMetadata()}}animationLast=timestamp;requestAnimationFrame(animationLoop)}
+function updateTimelineCursor(){
+ document.querySelectorAll('#timelineGrid .frame-header').forEach((node,index)=>node.classList.toggle('active',index===state.frame));
+ const cells=document.querySelectorAll('#timelineGrid .cel');let n=0;
+ for(let layer=project.layers.length-1;layer>=0;layer--)for(let frame=0;frame<project.frames.length;frame++){
+  const cell=cells[n++];if(!cell)continue;cell.classList.toggle('current-frame',frame===state.frame);cell.classList.toggle('active',layer===state.layer&&frame===state.frame);
+ }
+}
+function animationLoop(timestamp){
+ if(document.hidden){animationLast=timestamp;requestAnimationFrame(animationLoop);return}
+ if(state.playing&&project){animationTime+=Math.min(250,timestamp-animationLast||0);let advanced=false;
+  while(animationTime>=project.frames[state.frame].duration){animationTime-=project.frames[state.frame].duration;state.frame=(state.frame+1)%project.frames.length;advanced=true}
+  if(advanced){renderCanvas();updateTimelineCursor();updateMetadata()}
+ }
+ animationLast=timestamp;requestAnimationFrame(animationLoop);
+}
 // ----- Import, export, native GIF89a encoder -----
 function download(blob,name){const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000)}
 function downloadCanvas(c,name){c.toBlob(blob=>{if(blob)download(blob,name);else toast('Image encoding failed')},'image/png')}
@@ -760,16 +812,15 @@ function bindUI(){
  });
  document.addEventListener('keyup',e=>{if(e.code==='Space')state.space=false});
  window.addEventListener('blur',()=>{state.space=false;state.drag=null});
- window.addEventListener('beforeunload',()=>{if(state.dirty)autosave()});
+ window.addEventListener('pagehide',()=>{if(state.dirty)autosave()});window.addEventListener('beforeunload',()=>{if(state.dirty)autosave()});
 }
 async function init(){
  bindUI();bindWorkspace();
- let stored=null,storageSupported=true;
- try{stored=localStorage.getItem('nexus-pixel-studio-autosave-v1')}catch(e){storageSupported=false}
+ const stored=await loadBrowserSnapshot();
  if(stored){
-  try{await loadSerialized(JSON.parse(stored));$('saveStatus').textContent='Recovered locally'}
-  catch(e){console.warn('Autosave recovery failed; starter loaded',e);project=seedProject();refreshAll();fit();toast('Saved project could not be recovered')}
- }else{project=seedProject();refreshAll();fit();if(storageSupported)autosave();else $('saveStatus').textContent='Save project to file'}
+  try{await loadSerialized(stored);$('saveStatus').textContent='Recovered from browser';}
+  catch(error){console.warn('Autosave recovery failed; starter loaded',error);project=seedProject();refreshAll();fit();toast('Saved project could not be recovered');autosave()}
+ }else{project=seedProject();refreshAll();fit();autosave()}
  requestAnimationFrame(animationLoop)
 }
 // Diagnostic, read-only data surface for smoke tests and downstream integrations.
