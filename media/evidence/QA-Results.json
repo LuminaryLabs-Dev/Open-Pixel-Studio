@@ -1,0 +1,388 @@
+{
+  "pass": 55,
+  "failed": 0,
+  "checks": [
+    {
+      "check": "video duration Open-Pixel-Studio-01-Drawing-and-Workspace-20s.mp4",
+      "pass": true,
+      "detail": "20.000s"
+    },
+    {
+      "check": "video format Open-Pixel-Studio-01-Drawing-and-Workspace-20s.mp4",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "audio policy Open-Pixel-Studio-01-Drawing-and-Workspace-20s.mp4",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "video decodes Open-Pixel-Studio-01-Drawing-and-Workspace-20s.mp4",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "video duration Open-Pixel-Studio-02-Colors-and-Tools-20s.mp4",
+      "pass": true,
+      "detail": "20.000s"
+    },
+    {
+      "check": "video format Open-Pixel-Studio-02-Colors-and-Tools-20s.mp4",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "audio policy Open-Pixel-Studio-02-Colors-and-Tools-20s.mp4",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "video decodes Open-Pixel-Studio-02-Colors-and-Tools-20s.mp4",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "video duration Open-Pixel-Studio-03-Layers-and-Animation-20s.mp4",
+      "pass": true,
+      "detail": "20.000s"
+    },
+    {
+      "check": "video format Open-Pixel-Studio-03-Layers-and-Animation-20s.mp4",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "audio policy Open-Pixel-Studio-03-Layers-and-Animation-20s.mp4",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "video decodes Open-Pixel-Studio-03-Layers-and-Animation-20s.mp4",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "video duration Open-Pixel-Studio-60s-Workspace-Tour-Silent.mp4",
+      "pass": true,
+      "detail": "60.000s"
+    },
+    {
+      "check": "video format Open-Pixel-Studio-60s-Workspace-Tour-Silent.mp4",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "audio policy Open-Pixel-Studio-60s-Workspace-Tour-Silent.mp4",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "video decodes Open-Pixel-Studio-60s-Workspace-Tour-Silent.mp4",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "video duration Open-Pixel-Studio-60s-Workspace-Tour.mp4",
+      "pass": true,
+      "detail": "60.000s"
+    },
+    {
+      "check": "video format Open-Pixel-Studio-60s-Workspace-Tour.mp4",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "audio policy Open-Pixel-Studio-60s-Workspace-Tour.mp4",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "video decodes Open-Pixel-Studio-60s-Workspace-Tour.mp4",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "image decodes Open-Pixel-Studio-Capture-Contact-Sheet.png",
+      "pass": true,
+      "detail": "(1600, 1110)"
+    },
+    {
+      "check": "image decodes Open-Pixel-Studio-Five-Sprite-Strip-1600x320.png",
+      "pass": true,
+      "detail": "(1600, 320)"
+    },
+    {
+      "check": "image decodes Open-Pixel-Studio-Hero-1920x1080.png",
+      "pass": true,
+      "detail": "(1920, 1080)"
+    },
+    {
+      "check": "image decodes Open-Pixel-Studio-Itch-Cover-630x500.png",
+      "pass": true,
+      "detail": "(630, 500)"
+    },
+    {
+      "check": "image decodes Open-Pixel-Studio-Sample-Sprite-Sheet.png",
+      "pass": true,
+      "detail": "(64, 64)"
+    },
+    {
+      "check": "image decodes Open-Pixel-Studio-Social-Square-1080.png",
+      "pass": true,
+      "detail": "(1080, 1080)"
+    },
+    {
+      "check": "image decodes Open-Pixel-Studio-Social-Vertical-1080x1920.png",
+      "pass": true,
+      "detail": "(1080, 1920)"
+    },
+    {
+      "check": "image decodes Open-Pixel-Studio-Video-Thumbnail-1280x720.png",
+      "pass": true,
+      "detail": "(1280, 720)"
+    },
+    {
+      "check": "image decodes Screenshot-01-Drawing-Workspace.png",
+      "pass": true,
+      "detail": "(1280, 720)"
+    },
+    {
+      "check": "image decodes Screenshot-02-Sprite-Canvas.png",
+      "pass": true,
+      "detail": "(1280, 720)"
+    },
+    {
+      "check": "image decodes Screenshot-03-Palette-and-Tools.png",
+      "pass": true,
+      "detail": "(1280, 720)"
+    },
+    {
+      "check": "image decodes Screenshot-04-Layers-Inspector.png",
+      "pass": true,
+      "detail": "(1280, 720)"
+    },
+    {
+      "check": "image decodes Screenshot-05-Animation-Timeline.png",
+      "pass": true,
+      "detail": "(1280, 720)"
+    },
+    {
+      "check": "image decodes Screenshot-06-Example-Animation.png",
+      "pass": true,
+      "detail": "(1280, 720)"
+    },
+    {
+      "check": "graphic dimensions Open-Pixel-Studio-Itch-Cover-630x500.png",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "graphic dimensions Open-Pixel-Studio-Hero-1920x1080.png",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "graphic dimensions Open-Pixel-Studio-Social-Square-1080.png",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "graphic dimensions Open-Pixel-Studio-Social-Vertical-1080x1920.png",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "animated studio GIF",
+      "pass": true,
+      "detail": "3 frames"
+    },
+    {
+      "check": "studio sprite sheet",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "five original editable sprite projects",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "six genuine editor screenshots",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "three retained complete video takes",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "master 1500 frames at 25fps",
+      "pass": true,
+      "detail": "1500 frames"
+    },
+    {
+      "check": "master visible frame 0s",
+      "pass": true,
+      "detail": 31.8
+    },
+    {
+      "check": "master visible frame 0.1s",
+      "pass": true,
+      "detail": 31.6
+    },
+    {
+      "check": "master visible frame 3s",
+      "pass": true,
+      "detail": 31.7
+    },
+    {
+      "check": "master visible frame 9s",
+      "pass": true,
+      "detail": 35.0
+    },
+    {
+      "check": "master visible frame 19.8s",
+      "pass": true,
+      "detail": 35.0
+    },
+    {
+      "check": "master visible frame 20.3s",
+      "pass": true,
+      "detail": 34.5
+    },
+    {
+      "check": "master visible frame 31s",
+      "pass": true,
+      "detail": 34.5
+    },
+    {
+      "check": "master visible frame 39.8s",
+      "pass": true,
+      "detail": 34.5
+    },
+    {
+      "check": "master visible frame 40.3s",
+      "pass": true,
+      "detail": 35.7
+    },
+    {
+      "check": "master visible frame 53s",
+      "pass": true,
+      "detail": 35.7
+    },
+    {
+      "check": "master visible frame 59.5s",
+      "pass": true,
+      "detail": 35.7
+    }
+  ],
+  "video_probes": {
+    "Open-Pixel-Studio-01-Drawing-and-Workspace-20s.mp4": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 1280,
+          "height": 720,
+          "r_frame_rate": "25/1"
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "sample_rate": "32000",
+          "r_frame_rate": "0/0"
+        }
+      ],
+      "format": {
+        "duration": "20.000000"
+      }
+    },
+    "Open-Pixel-Studio-02-Colors-and-Tools-20s.mp4": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 1280,
+          "height": 720,
+          "r_frame_rate": "25/1"
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "sample_rate": "32000",
+          "r_frame_rate": "0/0"
+        }
+      ],
+      "format": {
+        "duration": "20.000000"
+      }
+    },
+    "Open-Pixel-Studio-03-Layers-and-Animation-20s.mp4": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 1280,
+          "height": 720,
+          "r_frame_rate": "25/1"
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "sample_rate": "32000",
+          "r_frame_rate": "0/0"
+        }
+      ],
+      "format": {
+        "duration": "20.000000"
+      }
+    },
+    "Open-Pixel-Studio-60s-Workspace-Tour-Silent.mp4": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 1280,
+          "height": 720,
+          "r_frame_rate": "25/1"
+        }
+      ],
+      "format": {
+        "duration": "60.000000"
+      }
+    },
+    "Open-Pixel-Studio-60s-Workspace-Tour.mp4": {
+      "programs": [],
+      "stream_groups": [],
+      "streams": [
+        {
+          "codec_name": "h264",
+          "codec_type": "video",
+          "width": 1280,
+          "height": 720,
+          "r_frame_rate": "25/1"
+        },
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "sample_rate": "32000",
+          "r_frame_rate": "0/0"
+        }
+      ],
+      "format": {
+        "duration": "60.000000"
+      }
+    }
+  },
+  "source_sha256": "83bb7b174d89704b4294a5c70e0d59c23831853fc0261c234f955704f6b1a3ba"
+}

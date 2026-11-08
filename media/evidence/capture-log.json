@@ -1,0 +1,39 @@
+[
+  {
+    "take": 3,
+    "source": "/mnt/data/Nexus-Pixel-Studio-v0.2.0-Standalone.html",
+    "video": "take-03.webm",
+    "duration_interactive_s": 12.58,
+    "events": [
+      {
+        "action": "Opened project Iron-Guardian",
+        "document": "Iron Guardian",
+        "layers": 2,
+        "frames": 1,
+        "tool": "pencil"
+      },
+      {
+        "action": "Added editable layer in real editor",
+        "document": "Iron Guardian",
+        "layers": 3,
+        "frames": 1,
+        "tool": "pencil"
+      },
+      {
+        "action": "Opened project Moss-Slime",
+        "document": "Moss Slime",
+        "layers": 1,
+        "frames": 3,
+        "tool": "pencil"
+      },
+      {
+        "action": "Scrubbed three animation frames through timeline",
+        "document": "Moss Slime",
+        "layers": 1,
+        "frames": 3,
+        "tool": "pencil"
+      }
+    ],
+    "page_errors": []
+  }
+]

@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <meta name="theme-color" content="#171719" />
+  <title>Nexus Pixel Studio — Pixel art workspace</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="workspace.css" />
+</head>
+<body>
+<div class="app">
+ <header class="topbar">
+  <div class="brand" aria-label="Luminary Nexus Pixel Studio"><div class="brandmark" aria-hidden="true"><i></i><i></i><i></i><i></i></div><div class="brandtext">NEXUS <b>PIXEL</b><small>STUDIO</small></div></div>
+  <div class="top-divider"></div>
+  <div class="menurow">
+   <div class="menu-group"><button class="menu-trigger" data-menu="file">File <span>⌄</span></button><div class="menu-pop" id="menu-file"><button data-action="new">New sprite <kbd>Ctrl N</kbd></button><button data-action="open">Open project / image <kbd>Ctrl O</kbd></button><button data-action="save">Save project <kbd>Ctrl S</kbd></button><div class="menu-rule"></div><button data-action="png">Export frame PNG</button><button data-action="sheet">Export sprite sheet</button><button data-action="gif">Export animated GIF</button><button data-action="atlas">Export atlas JSON</button></div></div>
+   <div class="menu-group"><button class="menu-trigger" data-menu="edit">Edit <span>⌄</span></button><div class="menu-pop" id="menu-edit"><button data-action="undo">Undo <kbd>Ctrl Z</kbd></button><button data-action="redo">Redo <kbd>Ctrl Y</kbd></button><div class="menu-rule"></div><button data-action="copy">Copy selected <kbd>Ctrl C</kbd></button><button data-action="cut">Cut selected <kbd>Ctrl X</kbd></button><button data-action="paste">Paste selection <kbd>Ctrl V</kbd></button><button data-action="delete-selection">Clear selection <kbd>Del</kbd></button><button data-action="deselect">Deselect <kbd>Ctrl D</kbd></button></div></div>
+   <div class="menu-group"><button class="menu-trigger" data-menu="sprite">Sprite <span>⌄</span></button><div class="menu-pop" id="menu-sprite"><button data-action="resize">Resize canvas</button><button data-action="flip-h">Flip active cel horizontally</button><button data-action="flip-v">Flip active cel vertically</button><button data-action="clear-cel">Clear active cel</button><div class="menu-rule"></div><button data-action="toggle-grid">Toggle pixel grid</button><button data-action="toggle-onion">Toggle onion skin</button></div></div>
+   <div class="menu-group"><button class="menu-trigger" data-menu="frame">Frame <span>⌄</span></button><div class="menu-pop" id="menu-frame"><button data-action="add-frame">New empty frame</button><button data-action="duplicate-frame">Duplicate frame</button><button data-action="delete-frame">Delete frame</button><button data-action="play">Play / pause <kbd>Enter</kbd></button></div></div>
+   <div class="menu-group"><button class="menu-trigger" data-menu="view">View <span>⌄</span></button><div class="menu-pop" id="menu-view"><button data-action="fit-view">Fit artwork <kbd>F</kbd></button><button data-action="toggle-inspector">Toggle right dock <kbd>Tab</kbd></button><button data-action="toggle-timeline">Toggle timeline <kbd>Shift Tab</kbd></button><div class="menu-rule"></div><button data-action="reset-workspace">Reset workspace</button><div class="menu-rule"></div><button data-action="fullscreen">Full-screen workspace</button></div></div>
+   <button class="header-help" id="helpBtn" title="Keyboard shortcuts">Help</button>
+  </div>
+  <div class="top-spacer"></div>
+  <div class="autosave"><span class="save-dot"></span><span id="saveStatus">Saved locally</span></div>
+  <div class="header-sep"></div>
+  <button class="icon-button" data-action="undo" id="undoBtn" title="Undo (Ctrl+Z)">↶</button>
+  <button class="icon-button" data-action="redo" id="redoBtn" title="Redo (Ctrl+Y)">↷</button>
+  <button class="icon-button workspace-button" id="timelinePaneBtn" title="Show or hide timeline (Shift+Tab)" aria-label="Toggle timeline" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="1"/><path d="M3 14h18M8 14v6M15 14v6"/></svg></button>
+  <button class="icon-button workspace-button" id="dockPaneBtn" title="Show or hide tools dock (Tab)" aria-label="Toggle right dock" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="1"/><path d="M15 4v16M15 9h6M15 14h6"/></svg></button>
+  <button class="primary-button" id="exportBtn" data-action="sheet" title="Export sprite sheet. Other formats: File menu"><span>↥</span> Export</button>
+ </header>
+ <div class="documentbar">
+  <div class="documenttab"><div class="tab-swatch"></div><input id="docName" value="Slime Study" aria-label="Project name" spellcheck="false"/><span class="tab-dot" id="dirtyDot">●</span></div>
+  <span class="doc-meta" id="docMeta">48 × 48 px · RGBA</span>
+  <div class="doc-fill"></div>
+  <span class="hint"><kbd>Space</kbd> pan <span class="muted">·</span> <kbd>Scroll</kbd> zoom <span class="muted">·</span> <kbd>Right-click</kbd> secondary color</span>
+ </div>
+ <main class="workarea">
+  <aside class="toolrail" aria-label="Drawing tools">
+   <div class="rail-label">DRAW</div>
+   <button class="tool active" data-tool="pencil" title="Pencil (P)"><span class="tool-symbol">✎</span><small>P</small></button>
+   <button class="tool" data-tool="eraser" title="Eraser (E)"><span class="tool-symbol">◩</span><small>E</small></button>
+   <button class="tool" data-tool="fill" title="Fill bucket (G)"><span class="tool-symbol">◈</span><small>G</small></button>
+   <button class="tool" data-tool="eyedropper" title="Eyedropper (I)"><span class="tool-symbol">◉</span><small>I</small></button>
+   <button class="tool" data-tool="dither" title="Dither brush (D)"><span class="tool-symbol">▦</span><small>D</small></button>
+   <div class="rail-divider"></div><div class="rail-label">SHAPE</div>
+   <button class="tool" data-tool="line" title="Line (L)"><span class="tool-symbol">╱</span><small>L</small></button>
+   <button class="tool" data-tool="rect" title="Rectangle (R)"><span class="tool-symbol">▢</span><small>R</small></button>
+   <button class="tool" data-tool="ellipse" title="Ellipse (O)"><span class="tool-symbol">◯</span><small>O</small></button>
+   <div class="rail-divider"></div><div class="rail-label">EDIT</div>
+   <button class="tool" data-tool="select" title="Rectangular marquee (M)"><span class="tool-symbol">▤</span><small>M</small></button>
+   <button class="tool" data-tool="move" title="Move pixels (V)"><span class="tool-symbol">✥</span><small>V</small></button>
+   <button class="tool" data-tool="hand" title="Pan (H)"><span class="tool-symbol">⛶</span><small>H</small></button>
+   <div class="rail-grow"></div>
+   <button class="rail-bottom" id="fitBtn" title="Fit sprite to view">⊞</button>
+  </aside>
+  <section class="editor-area">
+   <div class="canvas-controls">
+    <div class="panel-title"><span id="canvasToolName">Pencil</span></div>
+    <div class="control-group brush-control"><label for="brushSize">Size</label><input type="range" id="brushSize" min="1" max="16" value="1" /><output id="brushSizeLabel">1 px</output></div>
+    <div class="control-group"><button class="tiny-toggle" id="filledToggle" title="Filled shape">■ Filled</button><button class="tiny-toggle" id="symXToggle" title="Mirror horizontally">⇄ X</button><button class="tiny-toggle" id="symYToggle" title="Mirror vertically">⇅ Y</button></div>
+    <div class="right-controls"><button class="small-ctl" id="gridToggle" title="Pixel grid"># <span>Grid</span></button><button class="small-ctl" id="onionToggle" title="Previous/next frame overlay">◎ <span>Onion</span></button><span class="control-sep"></span><button class="zoom-ctl" id="zoomOut">−</button><b id="zoomValue">1200%</b><button class="zoom-ctl" id="zoomIn">+</button></div>
+   </div>
+   <div class="canvas-viewport" id="viewport" tabindex="0" aria-label="Pixel editor canvas">
+    <div class="work-grid"></div>
+    <div class="canvas-center" id="artboard">
+      <canvas id="onionCanvas" aria-hidden="true"></canvas>
+      <canvas id="renderCanvas" aria-label="Pixel art drawing canvas"></canvas>
+      <div id="pixelGrid"></div><canvas id="interactiveCanvas" aria-hidden="true"></canvas>
+      <div id="selectionBox" hidden></div>
+    </div>
+    <div class="viewport-head"><span class="live-indicator"></span><span>PIXEL PREVIEW</span><span class="viewport-head-muted">nearest neighbor</span></div>
+    <div class="viewport-bottom"><div class="axis-mark">↖ <span>Origin · top left</span></div><div class="viewport-instruction">Drag to draw <span>·</span> <kbd>Shift</kbd> straight line</div></div>
+   </div>
+   <div class="statusbar"><span class="status-tool" id="statusTool">✎ Pencil</span><span class="status-sep"></span><span id="coordLabel">x: — &nbsp; y: —</span><span class="status-sep"></span><span id="sizeLabel">48 × 48</span><span class="status-spacer"></span><span>RGBA · 8-bit/channel</span><span class="status-sep"></span><span id="activeCellLabel">Layer 1 · Frame 1</span></div>
+   <div class="timeline-resize" id="timelineResize" role="separator" aria-label="Resize timeline" aria-orientation="horizontal" tabindex="0"></div>
+   <div class="timeline-panel">
+    <div class="timeline-top"><div class="timeline-heading"><span class="timeline-glyph">▣</span> TIMELINE <span id="frameCountLabel" class="subheading">4 frames</span></div><div class="playback-controls"><button id="firstFrameBtn" title="First frame">|◀</button><button id="prevFrameBtn" title="Previous frame">◀</button><button id="playBtn" class="play-btn" title="Play animation (Enter)">▶</button><button id="nextFrameBtn" title="Next frame">▶</button><button id="lastFrameBtn" title="Last frame">▶|</button><span class="playback-divider"></span><label for="fpsInput">FPS</label><input id="fpsInput" type="number" min="1" max="30" value="8" /></div><div class="timeline-actions"><button id="addFrameBtn" title="Add empty frame">+ Frame</button><button id="duplicateFrameBtn" title="Duplicate frame">▣ Duplicate</button><button id="deleteFrameBtn" title="Delete current frame">×</button><span class="playback-divider"></span><button id="addLayerBtn" title="New layer">+ Layer</button></div></div>
+    <div class="timeline-scroll"><div id="timelineGrid" class="timeline-grid"></div></div>
+    <div class="timeline-footer"><span><span class="legend-cel active-legend"></span> Active cel</span><span><span class="legend-cel occupied-legend"></span> Contains pixels</span><span><span class="legend-cel empty-legend"></span> Empty</span><div class="timeline-footer-grow"></div><span>Click a cel to edit · Double-click layer name to rename</span></div>
+   </div>
+  </section>
+  <div class="dock-resize" id="dockResize" role="separator" aria-label="Resize right dock" aria-orientation="vertical" tabindex="0"></div>
+  <aside class="inspector" id="inspector" data-active-tab="color" aria-label="Editor dock">
+   <div class="dock-tabs" role="tablist" aria-label="Dock panels"><button class="dock-tab active" data-dock-tab="color" id="tabColor" role="tab" aria-selected="true" aria-controls="dock-color">Colors</button><button class="dock-tab" data-dock-tab="layer" id="tabLayer" role="tab" aria-selected="false" aria-controls="dock-layer">Layer</button><button class="dock-tab" data-dock-tab="navigator" id="tabNavigator" role="tab" aria-selected="false" aria-controls="dock-navigator">Navigator</button></div>
+   <div class="inspector-scroll">
+    <div class="inspector-section preview-section" id="dock-navigator" role="tabpanel" aria-labelledby="tabNavigator"><div class="section-heading">LIVE PREVIEW <button id="previewToggle" class="section-button" title="Play / pause preview">▶</button></div><div class="preview-container"><canvas id="previewCanvas" width="48" height="48" aria-label="Live pixel art preview"></canvas></div><div class="preview-caption"><span id="previewName">Slime Study</span><span id="previewFrame">01 / 04</span></div></div>
+    <div class="inspector-section color-section" id="dock-color" role="tabpanel" aria-labelledby="tabColor"><div class="section-heading">COLOR <span class="section-faint">FOREGROUND / BACKGROUND</span></div><div class="color-main"><div class="color-stack"><button id="bgSwatch" class="stack-bg" title="Secondary color"></button><button id="fgSwatch" class="stack-fg" title="Primary color"></button><button id="swapColors" class="swap-colors" title="Swap colors (X)">⇄</button></div><div class="color-meta"><label for="colorHex">HEX</label><div class="hex-wrap"><span>#</span><input id="colorHex" value="A6E35F" maxlength="6" spellcheck="false" aria-label="Hex color"/></div></div><input type="color" id="colorPicker" value="#a6e35f" aria-label="Color picker" title="Pick foreground color" /></div>
+     <div class="palette-heading"><span>PALETTE</span><select id="paletteSelect" aria-label="Color palette"><option value="DB32">DawnBringer 32</option><option value="PICO8">PICO-8</option><option value="FANTASY">Fantasy 24</option><option value="CUSTOM">Custom</option></select></div><div id="paletteGrid" class="palette-grid"></div><div class="palette-bottom"><span id="paletteInfo">32 swatches</span><button id="addColorBtn">+ Add color</button></div>
+    </div>
+    <div class="inspector-section layer-section" id="dock-layer" role="tabpanel" aria-labelledby="tabLayer"><div class="section-heading">ACTIVE LAYER <span class="section-faint" id="layerIndex">01 / 03</span></div><div class="layer-properties"><input id="layerName" class="layer-name-input" aria-label="Layer name" value="Highlights"/><div class="layer-property-row"><label>Opacity</label><input id="layerOpacity" type="range" min="0" max="100" value="100"/><span id="opacityReadout">100%</span></div><div class="layer-buttons"><button id="toggleLayerVisibility">◉ Visible</button><button id="toggleLayerLock">♙ Unlocked</button></div><div class="layer-buttons"><button id="layerUp" title="Move layer up">↑ Raise</button><button id="layerDown" title="Move layer down">↓ Lower</button><button id="deleteLayerBtn" title="Delete active layer">× Delete</button></div></div></div>
+    <div class="inspector-section export-section" aria-hidden="true"><div class="section-heading">QUICK EXPORT</div><div class="export-tiles"><button data-action="png"><span class="export-icon">▤</span><span>PNG<small>Current frame</small></span></button><button data-action="gif"><span class="export-icon">▣</span><span>GIF<small>Animated loop</small></span></button><button data-action="sheet"><span class="export-icon">▦</span><span>Sheet<small>All frames</small></span></button><button data-action="save"><span class="export-icon">◫</span><span>Project<small>Editable .npx</small></span></button></div></div>
+   </div>
+   <div class="inspector-footer"><span>LUMINARY LABS</span><span>v0.2.0</span></div>
+  </aside>
+ </main>
+</div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<input id="fileInput" type="file" accept=".npx,.json,image/png,image/webp" hidden/>
+<dialog id="newDialog" class="modal"><form method="dialog" id="newForm"><div class="modal-top"><div class="modal-kicker">FILE / NEW</div><h2>New sprite</h2><p>Create an RGBA document with a transparent or solid background.</p></div><label>Project name<input name="name" type="text" value="Untitled Sprite" maxlength="60" required /></label><div class="modal-grid"><label>Width (px)<input name="width" type="number" value="64" min="1" max="512" required /></label><label>Height (px)<input name="height" type="number" value="64" min="1" max="512" required /></label></div><label>First layer<select name="background"><option value="transparent">Transparent</option><option value="white">White background</option></select></label><div class="modal-actions"><button type="button" class="ghost-button" id="newCancel">Cancel</button><button type="submit" class="primary-button">Create sprite</button></div></form></dialog>
+<dialog id="resizeDialog" class="modal"><form method="dialog" id="resizeForm"><div class="modal-top"><div class="modal-kicker">SPRITE PROPERTIES</div><h2>Resize canvas</h2><p>Resizes the canvas for every layer and frame, preserving artwork from the upper-left corner.</p></div><div class="modal-grid"><label>Width (px)<input name="width" type="number" min="1" max="512" required /></label><label>Height (px)<input name="height" type="number" min="1" max="512" required /></label></div><div class="modal-actions"><button type="button" class="ghost-button" id="resizeCancel">Cancel</button><button type="submit" class="primary-button">Resize</button></div></form></dialog>
+<dialog id="helpDialog" class="modal help-modal"><div class="modal-kicker">HELP / KEYBOARD</div><h2>Shortcuts</h2><div class="shortcut-columns"><div><h3>Tools</h3><p><kbd>P</kbd> Pencil</p><p><kbd>E</kbd> Eraser</p><p><kbd>G</kbd> Fill</p><p><kbd>I</kbd> Eyedropper</p><p><kbd>D</kbd> Dither</p><p><kbd>L</kbd> Line</p><p><kbd>R</kbd> Rectangle</p><p><kbd>O</kbd> Ellipse</p><p><kbd>M</kbd> Select</p><p><kbd>V</kbd> Move selection</p><p><kbd>H</kbd> Hand / pan</p></div><div><h3>Workspace</h3><p><kbd>Ctrl Z/Y</kbd> Undo / redo</p><p><kbd>Ctrl S</kbd> Save project</p><p><kbd>Ctrl O</kbd> Open project</p><p><kbd>Ctrl N</kbd> New document</p><p><kbd>Ctrl C/X/V</kbd> Copy / cut / paste</p><p><kbd>Ctrl D</kbd> Deselect</p><p><kbd>Del</kbd> Clear selected pixels</p><p><kbd>X</kbd> Swap colors</p><p><kbd>Enter</kbd> Play / pause</p><p><kbd>[ / ]</kbd> Brush size</p><p><kbd>Space + drag</kbd> Pan</p><p><kbd>Tab</kbd> Toggle right dock</p><p><kbd>Shift Tab</kbd> Toggle timeline</p><p><kbd>F</kbd> Fit artwork</p><p><kbd>Wheel</kbd> Zoom</p></div></div><div class="modal-actions"><button id="helpClose" class="primary-button">Done</button></div></dialog>
+<script src="app.js"></script>
+</body>
+</html>

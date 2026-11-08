@@ -1,0 +1,1 @@
+16336c06edb67e7ef29c33dcec08961680a839b6440627fa980942ae228027b9  release/Nexus-Pixel-Studio-v0.2.0-Windows.exe

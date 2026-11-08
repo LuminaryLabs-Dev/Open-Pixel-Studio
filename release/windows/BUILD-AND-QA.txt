@@ -1,0 +1,13 @@
+Build: Nexus Pixel Studio v0.2.0 Windows Portable
+Date: 2026-11-07
+Platform: Windows x86-64, GUI PE32+ (Go 1.23.2)
+Build status: Built and statically verified
+Windows runtime status: Not tested on Windows
+Test status: Linux host unit test passed; nine endpoint/source/lifecycle checks passed.
+Browser test: Could not run due to Chromium administrative URL blocklist.
+Embedded UI: Byte-identical v0.2.0 standalone HTML before desktop lifecycle/favicon injection.
+Windows icon: RT_ICON 6 sizes; RT_GROUP_ICON 1; resource table verified.
+Native renderer: No; uses Edge/Chrome app window with local embedded application host.
+Network: Binds 127.0.0.1 only; no external network needed.
+Code changes: Only packaged desktop host and icon; existing pixel-editor implementation untouched.
+Publishing: None.

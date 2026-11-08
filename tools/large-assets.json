@@ -1,0 +1,22 @@
+{
+  "format": 1,
+  "description": "Exact, lossless restoration of oversized distribution assets",
+  "files": [
+    {
+      "path": "release/windows/Nexus-Pixel-Studio-v0.2.0-Windows.exe",
+      "compressed_path": "release/windows/Nexus-Pixel-Studio-v0.2.0-Windows.exe.xz",
+      "bytes": 5978112,
+      "sha256": "16336c06edb67e7ef29c33dcec08961680a839b6440627fa980942ae228027b9",
+      "compressed_bytes": 2008632,
+      "compressed_sha256": "8d0ec6fed2b4f3331db93d3bec499c69a4c92fd3591b38ce6edb68d9d16bb6f0"
+    },
+    {
+      "path": "media/evidence/original-promotional-score.wav",
+      "compressed_path": "media/evidence/original-promotional-score.wav.xz",
+      "bytes": 3840044,
+      "sha256": "6bf8fdc15dce7f8d6d2dace8c8e7d78918c7ed33775c3e4a9d230741c1d66d44",
+      "compressed_bytes": 351528,
+      "compressed_sha256": "2d9d441650b5d0a3b694f5781fecdce650836c2bb4faee32b77cf18dbdfb8af0"
+    }
+  ]
+}

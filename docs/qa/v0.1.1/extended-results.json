@@ -1,0 +1,98 @@
+[
+  {
+    "check": "PNG image import preserves pixel data",
+    "result": "PASS"
+  },
+  {
+    "check": "PNG image import creates single layer",
+    "result": "PASS"
+  },
+  {
+    "check": "Double horizontal flip is lossless",
+    "result": "PASS"
+  },
+  {
+    "check": "Double vertical flip is lossless",
+    "result": "PASS"
+  },
+  {
+    "check": "Space drag pans viewport",
+    "result": "PASS"
+  },
+  {
+    "check": "Pan leaves artwork unchanged",
+    "result": "PASS"
+  },
+  {
+    "check": "Cut removes selected pixels",
+    "result": "PASS"
+  },
+  {
+    "check": "Paste restores selected art",
+    "result": "PASS"
+  },
+  {
+    "check": "3px brush covers 3x3",
+    "result": "PASS"
+  },
+  {
+    "check": "3px eraser clears 3x3",
+    "result": "PASS"
+  },
+  {
+    "check": "Ctrl+S downloads editable project",
+    "result": "PASS"
+  },
+  {
+    "check": "Animated project opens with 3 frames",
+    "result": "PASS"
+  },
+  {
+    "check": "Animated .npx frame 1 lossless",
+    "result": "PASS"
+  },
+  {
+    "check": "Animated .npx frame 2 lossless",
+    "result": "PASS"
+  },
+  {
+    "check": "Animated .npx frame 3 lossless",
+    "result": "PASS"
+  },
+  {
+    "check": "Atlas JSON three frame entries",
+    "result": "PASS"
+  },
+  {
+    "check": "Atlas correct frame rectangles",
+    "result": "PASS"
+  },
+  {
+    "check": "GIF has three frames",
+    "result": "PASS"
+  },
+  {
+    "check": "GIF frame 1 exact RGBA",
+    "result": "PASS"
+  },
+  {
+    "check": "GIF frame 2 exact RGBA",
+    "result": "PASS"
+  },
+  {
+    "check": "GIF frame 3 exact RGBA",
+    "result": "PASS"
+  },
+  {
+    "check": "Add color swatch increases palette size",
+    "result": "PASS"
+  },
+  {
+    "check": "Custom palette includes new color",
+    "result": "PASS"
+  },
+  {
+    "check": "No uncaught page exceptions",
+    "result": "PASS"
+  }
+]

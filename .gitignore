@@ -1,0 +1,12 @@
+# Local compilation, caches and temporary material
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp
+__pycache__/
+.pytest_cache/
+.venv/
+node_modules/
+desktop/Open-Pixel-Studio-from-source.exe
+desktop/*.test.exe
+desktop/*.test

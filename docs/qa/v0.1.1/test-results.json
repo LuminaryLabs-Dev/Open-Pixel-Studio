@@ -1,0 +1,219 @@
+{
+  "build": "Nexus Pixel Studio v0.1.1",
+  "tested_at": "2026-11-06",
+  "method": "headless Chromium manual-style GUI pointer/keyboard interactions; screenshots visually reviewed",
+  "sprites": [
+    {
+      "name": "Ember Blade",
+      "size": "32x32",
+      "stroke_count": 91,
+      "png": "sprites/Ember-Blade-frame-01.png",
+      "project": "sprites/Ember-Blade.npx",
+      "layers": 1,
+      "frames": 1
+    },
+    {
+      "name": "Crimson Toadstool",
+      "size": "32x32",
+      "stroke_count": 102,
+      "png": "sprites/Crimson-Toadstool-frame-01.png",
+      "project": "sprites/Crimson-Toadstool.npx",
+      "layers": 1,
+      "frames": 1
+    },
+    {
+      "name": "Azure Potion",
+      "size": "32x32",
+      "stroke_count": 94,
+      "png": "sprites/Azure-Potion-frame-01.png",
+      "project": "sprites/Azure-Potion.npx",
+      "layers": 1,
+      "frames": 1
+    },
+    {
+      "name": "Iron Guardian",
+      "size": "32x32",
+      "stroke_count": 136,
+      "png": "sprites/Iron-Guardian-frame-01.png",
+      "project": "sprites/Iron-Guardian.npx",
+      "layers": 2,
+      "frames": 1
+    },
+    {
+      "name": "Moss Slime",
+      "size": "32x32",
+      "stroke_count": 100,
+      "png": "sprites/Moss-Slime-frame-01.png",
+      "project": "sprites/Moss-Slime.npx",
+      "layers": 1,
+      "frames": 3,
+      "spritesheet": "sprites/Moss-Slime-spritesheet.png",
+      "gif": "sprites/Moss-Slime.gif",
+      "atlas": "sprites/Moss-Slime-atlas.json"
+    }
+  ],
+  "checks": [
+    {
+      "name": "Ember Blade: Canvas pixel fidelity",
+      "status": "PASS"
+    },
+    {
+      "name": "Ember Blade: PNG export exactness",
+      "status": "PASS"
+    },
+    {
+      "name": "Eyedropper picks sword outline",
+      "status": "PASS"
+    },
+    {
+      "name": "Zoom increments",
+      "status": "PASS"
+    },
+    {
+      "name": "Grid toggle visible",
+      "status": "PASS"
+    },
+    {
+      "name": "Crimson Toadstool: Canvas pixel fidelity",
+      "status": "PASS"
+    },
+    {
+      "name": "Crimson Toadstool: PNG export exactness",
+      "status": "PASS"
+    },
+    {
+      "name": "Pencil adds pixel",
+      "status": "PASS"
+    },
+    {
+      "name": "Canvas takes focus after painting",
+      "status": "PASS"
+    },
+    {
+      "name": "Undo restores transparency",
+      "status": "PASS"
+    },
+    {
+      "name": "Redo restores painted pixel",
+      "status": "PASS"
+    },
+    {
+      "name": "Second undo restores source",
+      "status": "PASS"
+    },
+    {
+      "name": "Azure Potion: Canvas pixel fidelity",
+      "status": "PASS"
+    },
+    {
+      "name": "Azure Potion: PNG export exactness",
+      "status": "PASS"
+    },
+    {
+      "name": "Selection move modifies pixel composition",
+      "status": "PASS"
+    },
+    {
+      "name": "Selection move undo matches source",
+      "status": "PASS"
+    },
+    {
+      "name": "Layer visibility removes plume",
+      "status": "PASS"
+    },
+    {
+      "name": "Layer visibility restores plume",
+      "status": "PASS"
+    },
+    {
+      "name": "Layer lock prevents painting",
+      "status": "PASS"
+    },
+    {
+      "name": "Iron Guardian: Canvas pixel fidelity",
+      "status": "PASS"
+    },
+    {
+      "name": "Iron Guardian: PNG export exactness",
+      "status": "PASS"
+    },
+    {
+      "name": "Moss Slime: Canvas pixel fidelity",
+      "status": "PASS"
+    },
+    {
+      "name": "Moss Slime: PNG export exactness",
+      "status": "PASS"
+    },
+    {
+      "name": "Duplicate frame identical to base",
+      "status": "PASS"
+    },
+    {
+      "name": "Blink frame matches intended pixels",
+      "status": "PASS"
+    },
+    {
+      "name": "Sparkle frame pixel fidelity",
+      "status": "PASS"
+    },
+    {
+      "name": "3-frame sheet pixels and layout",
+      "status": "PASS"
+    },
+    {
+      "name": "Animated GIF frame count",
+      "status": "PASS"
+    },
+    {
+      "name": "Animation playback advances frames",
+      "status": "PASS"
+    },
+    {
+      "name": "Animation playback stops",
+      "status": "PASS"
+    },
+    {
+      "name": "Editable .npx reopen retains layers",
+      "status": "PASS"
+    },
+    {
+      "name": "Editable .npx reopen retains pixel contents",
+      "status": "PASS"
+    },
+    {
+      "name": "Local autosave survives reload",
+      "status": "BLOCKED",
+      "detail": "Managed Chromium blocks navigation; in-memory about:blank has no localStorage origin."
+    },
+    {
+      "name": "Filled rectangle paints extent",
+      "status": "PASS"
+    },
+    {
+      "name": "Filled ellipse center",
+      "status": "PASS"
+    },
+    {
+      "name": "Line start/end",
+      "status": "PASS"
+    },
+    {
+      "name": "Flood fill fills transparent region",
+      "status": "PASS"
+    },
+    {
+      "name": "X symmetry duplicates stroke",
+      "status": "PASS"
+    },
+    {
+      "name": "Resize changes document size",
+      "status": "PASS"
+    },
+    {
+      "name": "Unhandled JavaScript errors",
+      "status": "PASS"
+    }
+  ],
+  "errors": []
+}

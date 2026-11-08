@@ -1,0 +1,146 @@
+{
+  "passes": 28,
+  "failures": [],
+  "checks": [
+    {
+      "name": "Boot: editor model and drawing canvas",
+      "state": "PASS",
+      "detail": "(None, None)"
+    },
+    {
+      "name": "Desktop status: storage unavailable is not recovery failure",
+      "state": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Default: color dock visible",
+      "state": "PASS",
+      "detail": "(None, None)"
+    },
+    {
+      "name": "Default: dashboard preview hidden",
+      "state": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Default: export tiles hidden",
+      "state": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Color palette populated",
+      "state": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Tools replaced with consistent SVG icons",
+      "state": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Layer dock tab shows editable properties",
+      "state": "PASS",
+      "detail": "(None, None, None)"
+    },
+    {
+      "name": "Navigator tab shows native preview",
+      "state": "PASS",
+      "detail": "(None, None)"
+    },
+    {
+      "name": "Right dock collapses",
+      "state": "PASS",
+      "detail": "(None, None)"
+    },
+    {
+      "name": "Right dock restores",
+      "state": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Timeline collapses",
+      "state": "PASS",
+      "detail": "(None, None)"
+    },
+    {
+      "name": "Timeline restores",
+      "state": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Dock splitter changes width",
+      "state": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Timeline splitter changes height",
+      "state": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Reset workspace restores panel widths",
+      "state": "PASS",
+      "detail": "(None, None)"
+    },
+    {
+      "name": "New project creates fresh canvas",
+      "state": "PASS",
+      "detail": "(None, None)"
+    },
+    {
+      "name": "Pixel editing works with new workspace layout",
+      "state": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Undo works after drawing",
+      "state": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Redo restores edit",
+      "state": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Layer and frame creation still functional",
+      "state": "PASS",
+      "detail": "(None, None)"
+    },
+    {
+      "name": "Export button triggers sprite-sheet download",
+      "state": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Project Save exports editable .npx",
+      "state": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Project structure preserves layers and frames",
+      "state": "PASS",
+      "detail": "(None, None)"
+    },
+    {
+      "name": "Editable project loads through file picker",
+      "state": "PASS",
+      "detail": "(None, None)"
+    },
+    {
+      "name": "Undo works after HEX editing",
+      "state": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Browser JS errors",
+      "state": "PASS",
+      "detail": ""
+    },
+    {
+      "name": "Compact viewport still has editable canvas",
+      "state": "PASS",
+      "detail": "(None, None, None)"
+    }
+  ]
+}

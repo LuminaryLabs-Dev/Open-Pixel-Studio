@@ -1,0 +1,263 @@
+/* Nexus Pixel Studio 0.2 — Luminary workspace skin.
+   Color is semantic: red = Luminary identity, green = edit / success.
+   This sheet deliberately avoids marketing cards, gradients and dashboard chrome. */
+:root{
+  --bg:#171719;
+  --bg2:#1b1b1d;
+  --surface:#242426;
+  --raised:#2b2b2e;
+  --border:#39393d;
+  --border2:#4a4a4e;
+  --text:#e7e5e3;
+  --sub:#aaa9aa;
+  --muted:#858488;
+  --accent:#77b889;
+  --accent-bg:#25382c;
+  --brand-red:#bf463f;
+  --brand-red-light:#ed7167;
+  --violet:#a5a5a5;
+  --pixel:#80b990;
+  --danger:#d97c74;
+  --shadow:0 6px 30px #0009;
+  --dock-width:262px;
+  --timeline-size:212px;
+}
+html,body{background:#171719;color:var(--text)}
+body{font:12px/1.35 'Segoe UI',Arial,system-ui,sans-serif;letter-spacing:.025px}
+button,input,select{font-size:inherit}
+button:hover:not(:disabled){filter:none}
+button:focus-visible,input:focus-visible,select:focus-visible,[tabindex]:focus-visible{outline:1px solid var(--accent);outline-offset:-1px}
+::selection{background:#386248;color:#fff}
+.app{min-height:440px}
+
+/* Compact application menu, not a website header. */
+.topbar{height:39px;padding:0 10px 0 0;gap:2px;background:#19191b;border-bottom:1px solid #353538}
+.brand{height:100%;width:162px;gap:9px;padding:0 13px 0 11px;position:relative}
+.brand:before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--brand-red)}
+.brandmark{grid-template-columns:repeat(2,6px);grid-template-rows:repeat(2,6px);gap:2px;transform:none}
+.brandmark i,.brandmark i:nth-child(2),.brandmark i:nth-child(3),.brandmark i:nth-child(4){background:var(--brand-red)}
+.brandmark i:nth-child(2){background:#9a3432}.brandmark i:nth-child(3){background:#f06e63}
+.brandtext{font-family:'Segoe UI',Arial,sans-serif;letter-spacing:.65px;font-size:10px;font-weight:750;line-height:1.05;color:#ededee;white-space:nowrap}
+.brandtext b{color:#ededee}.brandtext small{font-size:8px;letter-spacing:2px;font-weight:450;margin-top:3px;color:#919093}
+.top-divider{height:17px;margin:0 6px 0 0;background:#39393d}
+.menurow{gap:0}
+.menu-trigger,.header-help{padding:6px 10px;border-radius:0;font-weight:500;color:#c6c5c5;min-height:28px}
+.menu-trigger span{color:#656568;font-size:9px;margin-left:2px}
+.menu-trigger:hover,.header-help:hover,.menu-group.open .menu-trigger{background:#303034;color:#fff}
+.header-help span{color:var(--sub)}
+.menu-pop{top:29px;background:#242426;border:1px solid #505053;border-radius:2px;box-shadow:0 9px 24px #000a;padding:4px;min-width:226px}
+.menu-pop button{padding:7px 10px;border-radius:1px;font-size:12px}
+.menu-pop button:hover{background:#414144}
+.menu-pop kbd{font-family:inherit;color:#969597;font-size:10px}
+.menu-rule{background:#3d3d40;margin:4px 0}
+.autosave{font-size:10px;color:#989a98;margin:0 10px;gap:6px}
+.save-dot{background:var(--accent);height:5px;width:5px;box-shadow:none}
+.header-sep{height:16px;background:#3a3a3c;margin:0 6px}
+.icon-button{background:transparent;border:1px solid transparent;color:#bbbcbf;border-radius:2px;height:27px;width:29px;font-size:20px;line-height:1;padding:0;display:grid;place-items:center}
+.icon-button:hover:not(:disabled){background:#323235;border-color:#434347}
+.icon-button:disabled{opacity:.27}
+.workspace-button{margin-left:2px}
+.workspace-button svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+.workspace-button[aria-pressed="false"]{color:#66676b}
+.primary-button{height:27px;padding:3px 11px;margin:0 3px 0 8px;background:#943b37;color:#fff;border:1px solid #a84a43;border-radius:2px;font-size:11px;font-weight:600;gap:6px}
+.primary-button:hover:not(:disabled){background:#ac4841;border-color:#c4594f}
+.primary-button span:first-child{font-size:14px}
+.primary-button .arrow{display:none}
+
+/* Document tabs are part of the frame, not another dashboard bar. */
+.documentbar{height:30px;padding:0 0 0 7px;gap:14px;background:#1c1c1e;border-bottom:1px solid #3c3c40}
+.documenttab{height:29px;min-width:166px;padding:0 10px;gap:8px;background:#29292b;border:0;border-top:2px solid var(--brand-red);border-right:1px solid #414145}
+.tab-swatch{height:9px;width:9px;background:repeating-conic-gradient(#8f8f8f 0% 25%,#38383a 0% 50%) 0/5px 5px}
+#docName{font-weight:500;color:#e8e8e9;font-size:11px;max-width:180px;outline:0}
+#docName:focus{border-bottom:1px solid var(--accent)}
+.tab-dot{font-size:8px;color:var(--brand-red-light)}
+.doc-meta{color:#858487;font-size:10px}
+.hint{color:#77777b;font-size:10px;margin-right:13px}
+.hint kbd{border:1px solid #434347;background:#29292d;padding:1px 4px;border-radius:1px;color:#aaa9ad}
+.hint .muted{margin:0 5px}
+
+/* Dense tools rail: no wordy section bands, flat selected tool. */
+.workarea{background:#202022;min-height:0}
+.toolrail{width:45px;padding:7px 3px 6px;gap:2px;background:#202022;border-right:1px solid #37373a;scrollbar-width:thin}
+.rail-label{display:none}
+.rail-divider{width:24px;background:#39393b;margin:7px 0}
+.tool{height:35px;width:37px;border:1px solid transparent;border-radius:2px;color:#b5b5b6}
+.tool:hover{background:#343436;border-color:#424246}
+.tool.active{background:#304639;border-color:#4c7559;color:#a0d5a6;box-shadow:inset 2px 0 0 var(--accent)}
+.tool-symbol{display:flex;align-items:center;justify-content:center;font-family:Arial,sans-serif;font-size:20px}
+.tool-symbol svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round}
+.tool small{font-family:Arial,sans-serif;font-size:8px;color:#74757a;right:3px;bottom:1px}
+.tool.active small{color:#a0d5a6}
+.rail-grow{min-height:8px}
+.rail-bottom{height:31px;width:35px;background:transparent;border:1px solid #414144;border-radius:2px;color:#9b9b9d;font-size:18px}
+
+/* The canvas is the main surface; controls read like a toolbar. */
+.editor-area{min-width:0}
+.canvas-controls{height:36px;padding:0 10px;gap:13px;background:#252527;border-bottom:1px solid #414144}
+.panel-title{font-size:11px;letter-spacing:0;font-weight:600;color:#d2d1d2;min-width:62px;text-transform:none}
+.tiny-cube,.context-divider{display:none}
+.panel-title #canvasToolName{color:#d7d7d7;font-weight:600}
+.panel-title::before{content:'';display:inline-block;width:4px;height:10px;background:var(--accent);margin-right:7px;vertical-align:-1px}
+.control-group{gap:8px}
+.control-group label,.control-group output{font-size:10px;color:#ababaf}
+.control-group input[type=range]{width:72px}
+.tiny-toggle,.small-ctl,.zoom-ctl{height:25px;background:transparent;border:1px solid #45454a;color:#c0c0c2;border-radius:2px;padding:3px 6px;font-size:10px}
+.tiny-toggle.selected,.small-ctl.selected{color:#a2cdaa;background:#304235;border-color:#4a7554}
+.right-controls{gap:4px}
+.small-ctl{padding:3px 7px}
+.small-ctl span{font-size:10px;margin-left:3px}
+.control-sep{height:15px;background:#454549;margin:0 4px}
+.zoom-ctl{width:23px;height:25px;font-size:14px}
+.right-controls b{min-width:46px;font-size:10px;color:#b9b9bb}
+.canvas-viewport{background:#29292b;min-height:110px;outline:none}
+.canvas-viewport:focus-visible{outline:-1px}
+.work-grid,.viewport-head,.viewport-bottom{display:none}
+.canvas-center{background-color:#424243;background-image:conic-gradient(#505052 25%,transparent 0 50%,#505052 0 75%,transparent 0);background-size:16px 16px;box-shadow:0 0 0 1px #77777a,0 6px 28px #0006}
+#selectionBox{outline-color:#2b2b2b}
+@keyframes march{to{border-color:#6bc87e;outline-color:#fff}}
+
+/* Timeline is a dock, with an actual splitter. */
+.timeline-resize{order:2;height:5px;flex:0 0 5px;background:#28282a;border-top:1px solid #444448;border-bottom:1px solid #333338;cursor:row-resize;position:relative}
+.timeline-resize:hover,.timeline-resize.dragging{background:#555259}
+.timeline-panel{order:3;height:var(--timeline-size);background:#202022;border-top:0}
+.statusbar{order:4;height:22px;background:#19191b;border-top:1px solid #3a3a3c;color:#929296;padding:0 10px;gap:10px;font-size:10px}
+.status-tool{color:#a3cbaa;font-weight:550}
+.status-sep{background:#3d3d3f;height:12px}
+.timeline-top{height:36px;gap:13px;padding:0 8px;background:#272729;border-bottom:1px solid #3b3b3d}
+.timeline-heading,.section-heading{font-size:10px;letter-spacing:.1px;color:#c8c7c7;font-weight:600}
+.timeline-heading{min-width:142px}
+.timeline-glyph{color:#b9b9b9;font-size:13px;margin-right:4px}
+.subheading{font-size:10px;margin-left:5px;color:#77787c}
+.playback-controls{gap:2px}
+.playback-controls button{width:24px;height:24px;border-radius:2px;color:#aaa9ab}
+.playback-controls button:hover{background:#363639}
+.playback-controls button.play-btn{background:#30503a;border:1px solid #53745c;color:#b0e3b7;width:28px}
+.playback-divider{height:16px;margin:0 5px;background:#48484a}
+.playback-controls input{width:42px;padding:2px 3px;border:1px solid #505054;border-radius:2px;background:#303033;color:#e2e0e0}
+.timeline-actions{gap:4px}
+.timeline-actions button{background:#313133;border:1px solid #4a4a4d;border-radius:2px;color:#d3d1d2;padding:5px 7px;font-size:10px}
+.timeline-actions button:hover{background:#3c3c3d}
+.timeline-scroll{scrollbar-color:#5b5b5e #29292b}
+.timeline-grid{--layer-column:171px}
+.timeline-header{height:25px;background:#29292c;color:#a8a8ac;border-color:#444448;padding-left:10px;letter-spacing:.3px;font-weight:500;font-size:10px}
+.timeline-layer{height:37px;background:#29292c;border-color:#3c3c40;padding:0 6px;gap:3px}
+.timeline-layer.active{background:#333536}
+.timeline-layer.active .layer-label{color:#c4e1c7}
+.layer-visibility,.layer-lock{color:#9b9b9e;width:20px;height:23px}
+.layer-label{max-width:115px;font-size:11px;font-weight:500;color:#c8c7c9}
+.frame-header{height:25px;color:#a4a4a6;border-color:#444448;background:#28282b;font-size:10px}
+.frame-header.active{background:#3a3e3a;color:#bbdec2;box-shadow:inset 0 -2px #75aa81}
+.cel{height:37px;background:#252527;border-color:#3c3c40;padding:3px}
+.cel:nth-child(even){background:#29292b}
+.cel img{height:28px}
+.cel.active{background:#364539!important;box-shadow:inset 0 0 0 1.5px #78b886}
+.cel.current-frame:not(.active){background:#323633}
+.cel-empty{border-color:#66676b}
+.cel.active .cel-empty{border-color:#b1e3bb}
+.timeline-footer{height:20px;padding:0 9px;gap:12px;color:#77777a;background:#212123;font-size:9px}
+.timeline-footer>span:last-child{display:none}
+.legend-cel{width:8px;height:8px}
+.active-legend{background:#304d38;border-color:#80c08b}
+.occupied-legend{background:#767679}
+.empty-legend{background:#262629;border-color:#68686b}
+
+/* A single utility dock, switched by tabs instead of stacked cards. */
+.dock-resize{width:5px;flex:0 0 5px;background:#2a2a2b;border-left:1px solid #454547;border-right:1px solid #363638;cursor:col-resize}
+.dock-resize:hover,.dock-resize.dragging{background:#575259}
+.inspector{width:var(--dock-width);background:#232325;border:0}
+.dock-tabs{height:36px;flex:0 0 36px;display:flex;align-items:stretch;background:#252528;border-bottom:1px solid #404043}
+.dock-tab{flex:1;border:0;border-right:1px solid #3e3e41;background:transparent;color:#9c9c9f;font-size:11px;font-weight:500;padding:0 6px;border-radius:0}
+.dock-tab.active{background:#303032;color:#f0eeee;box-shadow:inset 0 -2px 0 var(--brand-red)}
+.dock-tab:hover{background:#343436;color:#fff}
+.inspector-scroll{background:#232325;scrollbar-color:#515154 #232325}
+.inspector-section{border:0;padding:13px 12px 15px;background:transparent}
+.inspector-section .section-heading{color:#a7a6aa;letter-spacing:.25px;margin-bottom:12px;font-size:10px;text-transform:none}
+.inspector[data-active-tab="color"] .inspector-section:not(.color-section),
+.inspector[data-active-tab="layer"] .inspector-section:not(.layer-section),
+.inspector[data-active-tab="navigator"] .inspector-section:not(.preview-section){display:none}
+.inspector .export-section{display:none!important}
+.section-faint{font-size:9px;color:#77777b}
+.color-main{gap:11px;align-items:flex-start}
+.color-stack{width:54px;height:52px}
+.color-stack button{border:2px solid #29292b;border-radius:1px;box-shadow:0 0 0 1px #555558}
+.stack-fg{height:32px;width:32px}
+.stack-bg{height:32px;width:32px;left:15px;top:14px}
+.swap-colors{width:17px;height:17px;background:#3e3e42;color:#ddd;border:0!important;font-size:11px}
+.color-meta label{font-size:9px;letter-spacing:.4px;color:#98989a;margin-bottom:5px}
+.hex-wrap{background:#2b2b2e;border:1px solid #4b4b4e;border-radius:2px;padding:7px 7px}
+#colorHex{color:#dddcdc;font-weight:500;letter-spacing:.6px}
+#colorPicker{height:28px;width:24px}
+.palette-heading{margin-top:23px;margin-bottom:10px;font-size:10px;letter-spacing:.1px;color:#b1b1b3;font-weight:500}
+.palette-heading select{background:#2d2d30;color:#ddd;border:1px solid #49494e;border-radius:2px;padding:4px;max-width:130px;font-size:10px}
+.palette-grid{grid-template-columns:repeat(8,minmax(0,1fr));gap:3px}
+.palette-swatch{height:24px;border:1px solid #58585b;border-radius:0}
+.palette-swatch.active{outline:1px solid #f6f5f2;outline-offset:1px}
+.palette-bottom{margin-top:9px;font-size:10px;color:#8e8d90}
+.palette-bottom button{color:#a3d0ac;font-size:10px}
+.layer-name-input{padding:7px 8px;border:1px solid #4b4b4f;border-radius:2px;background:#2d2d30;color:#efeeee;font-weight:500}
+.layer-property-row{color:#b7b5b6;font-size:10px}
+.layer-buttons{margin-top:10px;gap:4px}
+.layer-buttons button{background:#303033;color:#d0ced0;border:1px solid #4a4a4e;border-radius:2px;padding:7px 2px;font-size:10px}
+.preview-container{height:170px;border-radius:1px;border:1px solid #4a4a4c;background:#2b2b2d}
+.preview-container:before{display:none}
+#previewCanvas{height:150px;width:150px}
+.preview-caption{color:#a0a0a1}
+.section-button{background:#323337;border:1px solid #525357;color:#a0d4a9;border-radius:2px}
+.inspector-footer{height:23px;background:#1d1d1f;border-top:1px solid #3b3b3d;color:#8d8b8e;letter-spacing:.5px;padding:0 9px;font-size:9px}
+
+/* Dialogs should feel like OS dialogs, not onboarding cards. */
+.toast{border-radius:2px;background:#25362b;border:1px solid #527458;box-shadow:0 5px 22px #0008;color:#c2ebca;font-weight:500;padding:8px 13px;font-size:11px}
+.modal{border:1px solid #535357;background:#27272a;border-radius:3px;padding:22px;box-shadow:0 20px 70px #000c}
+.modal::backdrop{background:#111b}
+.modal-kicker{color:#a3a2a4;letter-spacing:.5px;font-size:10px;font-weight:500}
+.modal h2{font-size:19px;letter-spacing:0;margin:10px 0 5px;font-weight:600}
+.modal p{font-size:11px;color:#a8a8ab;line-height:1.5}
+.modal form>label,.modal-grid>label{font-size:11px;font-weight:500;color:#c7c6c8}
+.modal form input,.modal form select{border-radius:2px;border:1px solid #56565a;background:#323235;color:#efeeee;padding:9px}
+.modal .primary-button{height:32px}
+.ghost-button{border-radius:2px;border:1px solid #58585a;background:#303033;padding:6px 12px}
+.shortcut-columns h3{color:#bac9bd}
+.shortcut-columns kbd{border-radius:1px;background:#353538;color:#d8d8d8}
+input[type=range]{accent-color:var(--accent)}
+
+body.dock-hidden .inspector,body.dock-hidden .dock-resize{display:none}
+body.timeline-hidden .timeline-panel,body.timeline-hidden .timeline-resize{display:none}
+body.is-resizing{cursor:col-resize!important;user-select:none}
+body.is-resizing.timeline-drag{cursor:row-resize!important}
+body.is-resizing *{cursor:inherit!important}
+
+@media(max-width:1160px){
+ .hint{display:none}
+ .brand{width:148px}
+ .canvas-controls{gap:8px}
+ .timeline-heading{min-width:116px}
+ .timeline-actions{gap:2px}
+}
+@media(max-width:860px){
+ .brand{width:123px;padding:0 7px}
+ .brandtext{font-size:9px}
+ .brandtext small{letter-spacing:1px}
+ .top-divider,.autosave,.header-sep{display:none}
+ .menu-trigger,.header-help{padding:5px 6px}
+ .documentbar{gap:7px}
+ .control-group input[type=range]{width:45px}
+ .canvas-controls{padding:0 5px}
+ .canvas-controls .control-group:nth-of-type(3){display:none}
+ .timeline-actions #duplicateFrameBtn{display:none}
+ .timeline-heading{min-width:84px}
+ .timeline-top{gap:5px}
+ .timeline-actions button{padding:4px}
+ .toolrail{width:39px;padding:5px 1px}
+ .tool{width:35px}
+}
+@media(max-width:650px){
+ .doc-meta,.right-controls .small-ctl span,.timeline-footer{display:none}
+ .inspector{width:min(220px,var(--dock-width))}
+ .timeline-heading{min-width:68px}
+ .timeline-top{gap:1px}
+ .playback-divider{margin:0 2px}
+ .menu-trigger span{display:none}
+}
+
+/* Restore Help access at compact desktop widths. */
+@media(max-width:990px){.header-help{display:inline-block}}
