@@ -856,18 +856,22 @@ init();
     ensure(Number.isInteger(w) && w >= 1 && w <= 512 && Number.isInteger(h) && h >= 1 && h <= 512, 'Project dimensions must be 1–512 pixels');
     ensure(Array.isArray(frames) && frames.length >= 1 && frames.length <= 128 && Array.isArray(layers) && layers.length >= 1 && layers.length <= 64, 'Invalid frame or layer count');
     ensure(w * h * 4 * frames.length * layers.length <= MAX_PROJECT_PIXEL_BYTES, 'Project exceeds editor memory budget');
+    for (const frame of frames) ensure(Number.isFinite(Number(frame.duration)) && Number(frame.duration) >= 20 && Number(frame.duration) <= 5000, 'Frame duration must be 20–5000 ms');
     for (const layer of layers) {
       ensure(Array.isArray(layer.cels) && layer.cels.length === frames.length, 'Each layer must contain one cel per frame');
-      ensure(layer.cels.every(c => typeof c === 'string' && c.startsWith('data:image/png;base64,')), 'Project has invalid PNG cels');
+      ensure(layer.cels.every(c => typeof c === 'string' && c.startsWith('data:image/png;base64,') && c.length <= w * h * 8 + 2048), 'Project has invalid or oversized PNG cels');
     }
     return doc;
   }
-  function layout(doc) {
+  function layout(doc, options = {}) {
+    const padding = Math.max(0, Math.min(16, Math.round(Number(options.padding) || 0)));
+    const spacing = Math.max(0, Math.min(16, Math.round(Number(options.spacing) || 0)));
     const columns = Math.ceil(Math.sqrt(doc.frames.length));
     const rows = Math.ceil(doc.frames.length / columns);
-    const width = doc.width * columns, height = doc.height * rows;
+    const width = doc.width * columns + padding * 2 + spacing * (columns - 1);
+    const height = doc.height * rows + padding * 2 + spacing * (rows - 1);
     ensure(width <= 16384 && height <= 16384 && width * height * 4 <= MAX_PACK_PIXEL_BYTES, 'Sprite sheet exceeds safe browser export size');
-    return { columns, rows, width, height };
+    return { columns, rows, width, height, padding, spacing };
   }
   function makeCanvas(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
   function pngBlob(canvas) { return new Promise((resolve, reject) => canvas.toBlob(b => b ? resolve(b) : reject(new Error('PNG encoding failed')), 'image/png')); }
@@ -895,7 +899,7 @@ init();
   function frameMetadata(doc, baseName, d) {
     return doc.frames.map((frame, i) => ({
       filename: `${baseName}-frame-${String(i + 1).padStart(4, '0')}.png`,
-      frame: { x: (i % d.columns) * doc.width, y: Math.floor(i / d.columns) * doc.height, w: doc.width, h: doc.height },
+      frame: { x: d.padding + (i % d.columns) * (doc.width + d.spacing), y: d.padding + Math.floor(i / d.columns) * (doc.height + d.spacing), w: doc.width, h: doc.height },
       rotated: false, trimmed: false, sourceSize: { w: doc.width, h: doc.height },
       duration: Math.max(20, Math.round(Number(frame.duration) || 125))
     }));
@@ -957,7 +961,7 @@ init();
     const e = $('pixelPackEngine').value;
     return { engine: engines.includes(e) || e === 'all' ? e : 'all', raw: $('pixelPackRaw').checked,
       atlas: $('pixelPackAtlas').checked, source: $('pixelPackSource').checked,
-      gif: $('pixelPackGif').checked };
+      gif: $('pixelPackGif').checked, padding: Math.max(0, Math.min(16, Math.round(Number($('pixelPackPadding').value) || 0))), spacing: Math.max(0, Math.min(16, Math.round(Number($('pixelPackSpacing').value) || 0))) };
   }
   function preview() {
     if (!$('pixelPackDialog')) return;
@@ -999,21 +1003,21 @@ init();
       progress?.(`Rendering ${itemIndex + 1}/${named.length}: ${doc.name}`);
       if (options.source) await add(`source/${name}.npx`, copyJson(doc), 'application/json');
       if (!options.raw && !options.atlas) continue;
-      const sheet = options.atlas ? layout(doc) : null;
+      const sheet = options.atlas ? layout(doc, options) : null;
       const c = sheet ? makeCanvas(sheet.width, sheet.height) : null;
       const sc = sheet ? c.getContext('2d') : null, cache = new Map();
       for (let frame = 0; frame < doc.frames.length; frame++) {
         if (abort) throw new Error('Export cancelled');
         const rendered = await renderFrame(doc, frame, cache);
         if (options.raw) await add(`raw/${name}/frame-${String(frame + 1).padStart(4, '0')}.png`, await pngBlob(rendered), 'image/png');
-        if (sheet) sc.drawImage(rendered, (frame % sheet.columns) * doc.width, Math.floor(frame / sheet.columns) * doc.height);
+        if (sheet) sc.drawImage(rendered, sheet.padding + (frame % sheet.columns) * (doc.width + sheet.spacing), sheet.padding + Math.floor(frame / sheet.columns) * (doc.height + sheet.spacing));
         if (frame % 4 === 3) await pause();
       }
       cache.clear();
       if (sheet) {
         const base = `atlases/${name}`;
         await add(`${base}/sheet.png`, await pngBlob(c), 'image/png');
-        const atlas = { meta: { app: 'Open Pixel Studio', appVersion: '1.1.0', image: 'sheet.png', size: { w: sheet.width, h: sheet.height }, format: 'RGBA8888', scale: '1' }, frames: frameMetadata(doc, name, sheet) };
+        const atlas = { meta: { app: 'Open Pixel Studio', appVersion: '1.1.0', image: 'sheet.png', size: { w: sheet.width, h: sheet.height }, padding: sheet.padding, spacing: sheet.spacing, format: 'RGBA8888', scale: '1' }, frames: frameMetadata(doc, name, sheet) };
         await add(`${base}/atlas.json`, copyJson(atlas), 'application/json');
       }
     }
@@ -1023,7 +1027,10 @@ init();
         await add(`previews/${named[0].name}.gif`, window.NexusStudio.toGIF(), 'image/gif');
       } else throw new Error('Active editor GIF preview is unavailable');
     }
-    for (const engine of selected) await add(`engines/${engine}/IMPORT.md`, engineGuide(engine), 'text/markdown');
+    for (const engine of selected) {
+      await add(`engines/${engine}/IMPORT.md`, engineGuide(engine), 'text/markdown');
+      await add(`engines/${engine}/import-map.json`, copyJson({ schema: 'open-pixel-engine-map/1', target: engine, pixelFiltering: 'nearest', compression: 'lossless', sprites: named.map(({ doc, name }) => ({ name, atlas: options.atlas ? `../../atlases/${name}/sheet.png` : null, metadata: options.atlas ? `../../atlases/${name}/atlas.json` : null, source: options.source ? `../../source/${name}.npx` : null, rawFrames: options.raw ? doc.frames.map((_, i) => `../../raw/${name}/frame-${String(i + 1).padStart(4, '0')}.png`) : [], durationsMs: doc.frames.map(f => f.duration) })) }), 'application/json');
+    }
     await add('README.md', readme(selected, named.map(x => ({ name: x.name }))), 'text/markdown');
     await zip.add('manifest.json', copyJson(manifest));
     progress?.('Assembling ZIP archive');
@@ -1065,7 +1072,7 @@ init();
       #pixelPackDialog p {margin:4px 0 0;color:#aeb3bf;line-height:1.5;font-size:13px;}
       #pixelPackDialog .pack-grid {display:grid;gap:12px;grid-template-columns:1fr 1fr;}
       #pixelPackDialog label {display:flex;align-items:center;gap:8px;font-size:13px;color:#e4e7ed;}
-      #pixelPackDialog select,#pixelPackDialog input[type=file] {width:100%;box-sizing:border-box;border-radius:6px;border:1px solid #555a63;background:#151619;color:#eceef3;padding:8px;font-size:13px;}
+      #pixelPackDialog select,#pixelPackDialog input[type=file],#pixelPackDialog input[type=number] {width:100%;box-sizing:border-box;border-radius:6px;border:1px solid #555a63;background:#151619;color:#eceef3;padding:8px;font-size:13px;}
       #pixelPackDialog label.pack-select {display:grid;gap:6px;}
       #pixelPackDialog .pack-options {display:grid;gap:10px;background:#18191c;padding:14px;border-radius:8px;}
       #pixelPackDialog .pack-options input {accent-color:#52b876;}
@@ -1086,6 +1093,7 @@ init();
     dialog.innerHTML = `<form class="pack-form" method="dialog" id="pixelPackForm">
       <header><h2 id="pixelPackHeading">Export Asset Pack</h2><p>Download editable sources, transparent frame PNGs, atlases and engine guides together in one ZIP.</p></header>
       <div class="pack-grid"><label class="pack-select">Engine target<select id="pixelPackEngine"><option value="all">All supported engines</option><option value="unity">Unity</option><option value="godot">Godot</option><option value="unreal">Unreal Paper2D</option><option value="generic">Generic PNG + JSON</option></select></label><label class="pack-select">Add existing .npx projects<input id="pixelPackFiles" type="file" multiple accept=".npx" aria-label="Other editable projects to include"></label></div>
+      <div class="pack-grid"><label class="pack-select">Atlas padding (px)<input id="pixelPackPadding" type="number" min="0" max="16" value="0"></label><label class="pack-select">Frame spacing (px)<input id="pixelPackSpacing" type="number" min="0" max="16" value="0"></label></div>
       <div class="pack-options"><label><input id="pixelPackSource" type="checkbox" checked>Editable source projects (.npx)</label><label><input id="pixelPackRaw" type="checkbox" checked>Raw transparent frame PNGs</label><label><input id="pixelPackAtlas" type="checkbox" checked>Sprite sheets + JSON atlases</label><label><input id="pixelPackGif" type="checkbox">GIF preview (active project only)</label></div>
       <div class="pack-preview"><strong id="pixelPackCount">1 project in this archive</strong><div id="pixelPackPreview"></div><small>ZIP includes README.md, manifest.json and engine import guides. Native Unity/Unreal assets are not generated.</small></div>
       <div id="pixelPackStatus" class="pack-status" role="status" aria-live="polite"></div>
@@ -1102,6 +1110,7 @@ init();
       fileMenu.insertBefore(b, fileMenu.querySelector('[data-action="png"]') || null);
     }
     const prev = prefs(); if (prev.engine && [...engines, 'all'].includes(prev.engine)) $('pixelPackEngine').value = prev.engine;
+    for (const key of ['padding', 'spacing']) if (Number.isInteger(prev[key]) && prev[key] >= 0 && prev[key] <= 16) $(`pixelPack${key[0].toUpperCase() + key.slice(1)}`).value = prev[key];
     for (const key of ['raw', 'source', 'atlas', 'gif']) if (typeof prev[key] === 'boolean') $(`pixelPack${key[0].toUpperCase() + key.slice(1)}`).checked = prev[key];
     for (const element of dialog.querySelectorAll('input,select')) element.addEventListener('change', preview);
     $('pixelPackCreate').addEventListener('click', runExport);
