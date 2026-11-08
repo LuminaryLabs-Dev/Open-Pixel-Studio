@@ -951,15 +951,18 @@ init();
       return new Blob([...parts, ...directory, end], { type: 'application/zip' });
     }
   }
-  function readme(engineList, projects) {
+  function readme(engineList, projects, options) {
     return '# Open Pixel Studio Asset Pack\n\nGenerated with Open Pixel Studio v1.1.0 export workflow.\n\n'
       + `Included projects: ${projects.map(p => p.name).join(', ')}\n\n`
-      + 'source/ holds editable .npx projects; raw/ has individual transparent frames; atlases/ contains matching PNG and JSON sheets.\n'
+      + (options.source ? 'source/ contains editable .npx projects.\n' : '')
+      + (options.raw ? 'raw/ contains transparent frame PNGs.\n' : '')
+      + (options.atlas ? 'atlases/ contains matching PNG and JSON sheets.\n' : '')
       + 'Import PNG files with nearest-neighbor filtering and transparency. Frame durations are in milliseconds in atlas JSON.\n'
       + `Engine guides: ${engineList.join(', ')}. These are import-ready images/metadata, not precompiled Unity or Unreal assets.\n`;
   }
-  function engineGuide(name) {
-    const common = 'Use atlases/*.png and matching *.json, or the individual PNGs under raw/. Preserve alpha, frame order, frame sizes, and per-frame duration. Disable linear texture filtering and compression for pixel-perfect art.\n';
+  function engineGuide(name, options) {
+    const files = [options.atlas && 'atlases/*.png and accompanying atlas.json', options.raw && 'individual raw/*.png frames'].filter(Boolean).join(' or ');
+    const common = files ? `Use ${files}. Preserve alpha, frame order, frame sizes, and per-frame duration. Disable linear texture filtering and compression for pixel-perfect art.\n` : 'This is a source-only archive. Re-export with PNG or atlas outputs selected before importing into a game engine.\n';
     switch (name) {
       case 'unity': return '# Unity Import\n\n' + common + 'Import PNG as Sprite (2D and UI), Filter Mode Point (no filter), Compression None, and configure Slice/grid using each frame rectangle in atlas JSON. Build animations using duration values.\n';
       case 'godot': return '# Godot Import\n\n' + common + 'Import PNG as CanvasItem texture (Lossless), set CanvasItem texture filter to Nearest. Use atlas rectangles to define AtlasTexture regions, or frames to populate AnimatedSprite2D/SpriteFrames.\n';
@@ -1041,10 +1044,10 @@ init();
       } else throw new Error('Active editor GIF preview is unavailable');
     }
     for (const engine of selected) {
-      await add(`engines/${engine}/IMPORT.md`, engineGuide(engine), 'text/markdown');
+      await add(`engines/${engine}/IMPORT.md`, engineGuide(engine, options), 'text/markdown');
       await add(`engines/${engine}/import-map.json`, copyJson({ schema: 'open-pixel-engine-map/1', target: engine, pixelFiltering: 'nearest', compression: 'lossless', sprites: named.map(({ doc, name }) => ({ name, atlas: options.atlas ? `../../atlases/${name}/sheet.png` : null, metadata: options.atlas ? `../../atlases/${name}/atlas.json` : null, source: options.source ? `../../source/${name}.npx` : null, rawFrames: options.raw ? doc.frames.map((_, i) => `../../raw/${name}/frame-${String(i + 1).padStart(4, '0')}.png`) : [], durationsMs: doc.frames.map(f => f.duration) })) }), 'application/json');
     }
-    await add('README.md', readme(selected, named.map(x => ({ name: x.name }))), 'text/markdown');
+    await add('README.md', readme(selected, named.map(x => ({ name: x.name })), options), 'text/markdown');
     await zip.add('manifest.json', copyJson(manifest));
     progress?.('Assembling ZIP archive');
     const blob = await zip.finish();
