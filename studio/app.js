@@ -60,7 +60,7 @@ function seedProject(){
  return result;
 }
 let project, history=[], future=[];
-let state={tool:'pencil',frame:0,layer:1,fg:'#A6E35F',bg:'#263861',brush:1,brushShape:'square',sg2CustomBrush:null,sg2InkMode:'image',sg2GradientMode:'smooth',pixelPerfect:true,pressureEnabled:true,ditherPattern:'checker',zoom:8,panX:0,panY:0,grid:false,onion:false,symX:false,symY:false,filled:false,playing:false,selection:null,lastSelection:null,clipboard:null,drag:null,space:false,dirty:false};
+let state={tool:'pencil',frame:0,layer:1,fg:'#A6E35F',bg:'#263861',brush:1,brushShape:'square',sg2CustomBrush:null,sg2InkMode:'image',sg2GradientMode:'smooth',sg2GradientType:'linear',pixelPerfect:true,pressureEnabled:true,ditherPattern:'checker',zoom:8,panX:0,panY:0,grid:false,onion:false,symX:false,symY:false,filled:false,playing:false,selection:null,lastSelection:null,clipboard:null,drag:null,space:false,dirty:false};
 const maxHistory=24, historyMemoryLimit=80*1024*1024;
 const documentMemoryLimit=96*1024*1024;
 function fitsMemoryBudget(width=project.width,height=project.height,frames=project.frames.length,layers=project.layers.length){return width*height*4*frames*layers<=documentMemoryLimit}
