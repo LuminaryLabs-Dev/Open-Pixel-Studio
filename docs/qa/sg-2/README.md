@@ -42,3 +42,42 @@ This branch is based on `feature/v1.1.0-export-packs`, not `main`. It does not c
 From repository root: `node --test docs/qa/sg-2/drawing-kernel.test.cjs`.
 
 For a release candidate, execute browser-level regression/reload recovery, perf stress, export round-trip and Windows runtime verification first. Do not mark SG-2 complete without those gates.
+
+## Implementation pass 2 — exact selections and transforms
+
+**Implemented on the same working branch; not a release candidate.**
+
+- Mask raster engine: inclusive rectangle, pixel-aligned ellipse, freehand polygon/lasso, click-vertex polygon, contiguous magic wand and noncontiguous color-range selection.
+- Replace/add/subtract/intersect composition; Shift/Alt/Ctrl pointer modifiers and UI mode selector; color tolerance control; exact-pixel selection outline overlay.
+- Painting and prior invert/color replacement now respect irregular masks without per-painted-pixel mask allocations.
+- Mask-aware copy, cut, delete, paste, drag/move and horizontal/vertical flip. Masked CW/CCW 90-degree rotation refuses operations that would clip rotated bounds outside the document.
+- Select all, invert selection, document-wide crop to selection bounding box, and shortcut/menu bindings. Polygon mode supports click vertices, double-click/Enter to finish and Escape to cancel.
+- Selection state is **ephemeral**, never serialized into the v1 `.npx` document; reset on new/open/restore/resize. No changes to project file format.
+- All source integrations synchronized in split editor, `studio/standalone.html`, `release/html5/index.html` and `desktop/editor.html`.
+
+### Evidence (pass 2)
+
+1. Committed `selection-core.test.cjs`: **13/13** tests passed against the GitHub branch's actual raster code via independent JavaScript execution. Includes 512×512 contiguous flood selection and corrupt dimension rejection.
+2. Previous `drawing-kernel.test.cjs`: **8/8** still pass against the current editor source.
+3. **Sandbox Chromium module-integration harness** (not the complete editor): rectangle selection, masked deletion, ellipse selection and contiguous magic wand all passed; no uncaught page errors. The harness used actual SG-2 selection modules with a minimal canvas host.
+4. All inline scripts in all three bundled HTML distributions parse; every bundle embeds exact copies of the committed editor, mask core and interaction modules; standalone and HTML5 distributions match byte-for-byte.
+5. Added `browser-selection-smoke.py` to run against the **complete editor** using a sandbox Chromium. This separate full-editor script **has not yet been executed** against the actual repository HTML; it is a pending acceptance gate.
+
+Run from repo root:
+
+```sh
+node --test docs/qa/sg-2/drawing-kernel.test.cjs docs/qa/sg-2/selection-core.test.cjs
+PIXEL_CHROMIUM=/usr/bin/chromium python docs/qa/sg-2/browser-selection-smoke.py
+```
+
+The first command has been validated in source-level execution. The browser command is present for next regression testing but cannot be claimed passing yet.
+
+### Remaining risks / deferred scope
+
+- Full live-editor and prior 28-case regression still required, including canvas resize, selection edge clipping, file recovery and v1.1 pack export.
+- Browser tests outside Chromium; physical stylus and Windows runtime still unverified.
+- No selection-history persistence, resize/scale transform handles, RotSprite-quality rotation, procedural/custom brushes, gradient/contour ink, advanced HSV/outline FX or tiled/snap preview yet.
+- Lasso/polygon performance on very long paths, multi-layer complex selections and long editing soak remain to benchmark.
+- v1.2 indexed/grayscale drawing parity is not yet available; SG-2 cannot pass its v1.3 RC gate until that domain matures.
+
+**SG-2 stays IN PROGRESS. PR #4 remains a draft, based on the unmerged v1.1.0 feature branch.**
