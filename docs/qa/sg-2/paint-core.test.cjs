@@ -29,3 +29,35 @@ test('semi-transparent stamp composites without degrading alpha',()=>{let b={wid
 test('brush respects selection mask',()=>{let b={width:2,height:1,data:new Uint8ClampedArray([...solid(10,20,30),...solid(10,20,30)])},p=image(4,1);P.stamp(p,4,1,b,2,0,'#ffffff','image',new Uint8Array([0,1,0,0]));assert.deepEqual(pixel(p,4,1,0),solid(10,20,30));assert.deepEqual(pixel(p,4,2,0),solid(0,0,0,0))});
 test('eraser honors brush alpha',()=>{let b={width:1,height:1,data:new Uint8ClampedArray(solid(0,0,0,128))},p=image(1,1,()=>solid(100,100,100));P.stamp(p,1,1,b,0,0,'#ffffff','image',null,true);assert.equal(pixel(p,1,0,0)[3],127)});
 test('large canvas gradient stays within 512x512',()=>{const r=P.linearGradient(image(512,512),512,512,null,{x:0,y:0},{x:511,y:0},'#000000','#ffffff','dither');assert.equal(r.data.length,512*512*4);assert.equal(r.changed,512*512)});
+
+test('radial gradient samples equal radius equally',()=>{
+ const out=P.linearGradient(image(5,5),5,5,null,{x:2,y:2},{x:4,y:2},'#ff0000','#0000ff','smooth','radial');
+ assert.deepEqual(pixel(out.data,5,2,2),solid(255,0,0));
+ assert.deepEqual(pixel(out.data,5,2,4),solid(0,0,255));
+ assert.deepEqual(pixel(out.data,5,4,2),solid(0,0,255));
+ assert.deepEqual(pixel(out.data,5,2,3),solid(128,0,128));
+});
+test('Bayer 2/4/8 matrix sizes preserve endpoint colors',()=>{
+ const a=solid(10,20,30),b=solid(240,210,180);
+ for(const mode of ['dither2','dither4','dither8']){
+  const out=P.linearGradient(image(16,16),16,16,null,{x:0,y:0},{x:15,y:0},a,b,mode);
+  assert.deepEqual(pixel(out.data,16,0,0),a);
+  assert.deepEqual(pixel(out.data,16,15,0),b);
+  for(let x=0;x<16;x++)for(let y=0;y<16;y++){
+   const p=pixel(out.data,16,x,y);
+   assert.ok(JSON.stringify(p)===JSON.stringify(a)||JSON.stringify(p)===JSON.stringify(b));
+  }
+ }
+});
+test('inside outline colors boundary but preserves center and alpha',()=>{
+ const src=image(5,5,(x,y)=>x>=1&&x<=3&&y>=1&&y<=3?solid(25,75,125,195):solid(0,0,0,0));
+ const out=P.outline(src,5,5,null,'#ff0000',false,1,'inside');
+ assert.equal(out.changed,8);
+ assert.deepEqual(pixel(out.data,5,1,1),solid(255,0,0,195));
+ assert.deepEqual(pixel(out.data,5,2,2),solid(25,75,125,195));
+ assert.deepEqual(pixel(out.data,5,0,1),solid(0,0,0,0));
+});
+test('invalid radial mode and outline placement are rejected',()=>{
+ assert.throws(()=>P.linearGradient(image(1,1),1,1,null,{x:0,y:0},{x:1,y:0},'#000000','#ffffff','smooth','conic'),RangeError);
+ assert.throws(()=>P.outline(image(1,1),1,1,null,'#ffffff',false,1,'over'),RangeError);
+});
