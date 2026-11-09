@@ -180,7 +180,7 @@ function paintPixel(c,x,y,color,eraser=false,dither=false,pressure=1){
   const bx=cx-off,by=cy-off,mid=(size-1)/2;
   for(let py=by;py<by+size;py++)for(let px=bx;px<bx+size;px++){
    if(!inside(px,py)||!withinSelection(px,py))continue;
-   if(state.brushShape==='circle'&&Math.hypot(px-bx-mid,py-by-mid)>size/2)continue;
+   if(state.brushShape==='circle'&&Math.hypot(px-bx-mid,py-by-mid)>size/2-(size%2?.5:.1))continue;
    if(dither&&!sg2DitherAllows(px,py))continue;
    if(eraser)c.clearRect(px,py,1,1);else{c.fillStyle=color;c.fillRect(px,py,1,1)}
   }
