@@ -60,7 +60,7 @@ function seedProject(){
  return result;
 }
 let project, history=[], future=[];
-let state={tool:'pencil',frame:0,layer:1,fg:'#A6E35F',bg:'#263861',brush:1,zoom:8,panX:0,panY:0,grid:false,onion:false,symX:false,symY:false,filled:false,playing:false,selection:null,clipboard:null,drag:null,space:false,dirty:false};
+let state={tool:'pencil',frame:0,layer:1,fg:'#A6E35F',bg:'#263861',brush:1,brushShape:'square',pixelPerfect:true,pressureEnabled:true,ditherPattern:'checker',zoom:8,panX:0,panY:0,grid:false,onion:false,symX:false,symY:false,filled:false,playing:false,selection:null,clipboard:null,drag:null,space:false,dirty:false};
 const maxHistory=24, historyMemoryLimit=80*1024*1024;
 const documentMemoryLimit=96*1024*1024;
 function fitsMemoryBudget(width=project.width,height=project.height,frames=project.frames.length,layers=project.layers.length){return width*height*4*frames*layers<=documentMemoryLimit}
@@ -148,7 +148,7 @@ function updateTimeline(){
 }
 function updateInspector(){const l=selectedLayer();document.title=project.name+' — Nexus Pixel Studio';$('docName').value=project.name;$('docMeta').textContent=`${project.width} × ${project.height} px · RGBA`;$('sizeLabel').textContent=`${project.width} × ${project.height}`;$('previewName').textContent=project.name;$('layerName').value=l.name;$('layerOpacity').value=Math.round(l.opacity*100);$('opacityReadout').textContent=Math.round(l.opacity*100)+'%';$('toggleLayerVisibility').textContent=l.visible?'◉ Visible':'◌ Hidden';$('toggleLayerLock').textContent=l.locked?'▣ Locked':'♙ Unlocked';$('layerIndex').textContent=`${String(state.layer+1).padStart(2,'0')} / ${String(project.layers.length).padStart(2,'0')}`;
  $('activeCellLabel').textContent=`${l.name} · Frame ${state.frame+1}`;$('fpsInput').value=clamp(Math.round(1000/project.frames[state.frame].duration),1,30);$('canvasToolName').textContent=state.tool.replace(/^[a-z]/,c=>c.toUpperCase());$('statusTool').textContent=state.tool.toUpperCase();
- $('brushSize').value=state.brush;$('brushSizeLabel').textContent=state.brush+' px';$('gridToggle').classList.toggle('selected',state.grid);$('onionToggle').classList.toggle('selected',state.onion);$('symXToggle').classList.toggle('selected',state.symX);$('symYToggle').classList.toggle('selected',state.symY);$('filledToggle').classList.toggle('selected',state.filled);
+ $('brushSize').value=state.brush;$('brushSizeLabel').textContent=state.brush+' px';$('sg2BrushShape').value=state.brushShape;$('sg2DitherPattern').value=state.ditherPattern;$('sg2PixelPerfect').setAttribute('aria-pressed',String(state.pixelPerfect));$('sg2Pressure').setAttribute('aria-pressed',String(state.pressureEnabled));document.querySelectorAll('[data-sg2-preset]').forEach(b=>b.classList.toggle('selected',Number(b.dataset.sg2Preset)===state.brush));$('gridToggle').classList.toggle('selected',state.grid);$('onionToggle').classList.toggle('selected',state.onion);$('symXToggle').classList.toggle('selected',state.symX);$('symYToggle').classList.toggle('selected',state.symY);$('filledToggle').classList.toggle('selected',state.filled);
  $('fgSwatch').style.background=state.fg;$('bgSwatch').style.background=state.bg;$('colorHex').value=state.fg.slice(1);$('colorPicker').value=state.fg.toLowerCase();
  $('paletteSelect').value=project.paletteKey in PALETTES||project.paletteKey==='CUSTOM'?project.paletteKey:'CUSTOM';
  $('paletteGrid').replaceChildren();project.palette.forEach((color,i)=>{const sw=document.createElement('button');sw.className='palette-swatch'+(state.fg.toLowerCase()===color.toLowerCase()?' active':'');sw.style.background=color;sw.title=`${i+1}: ${color}`;sw.onclick=e=>{if(e.button===2)return;setForeground(color)};sw.oncontextmenu=e=>{e.preventDefault();state.bg=color;updateInspector()};sw.ondblclick=()=>{const value=prompt('Edit palette color (HEX)',color);const updated=normalHex(value||'');if(updated){checkpoint();project.paletteKey='CUSTOM';project.palette[i]=updated;updateInspector();changed()}};$('paletteGrid').append(sw)});$('paletteInfo').textContent=project.palette.length+' swatches';
@@ -163,11 +163,53 @@ function setTool(tool){state.tool=tool;state.drag=null;updateInspector()}
 function canvasPoint(e){const r=$('artboard').getBoundingClientRect();return {x:Math.floor((e.clientX-r.left)/state.zoom),y:Math.floor((e.clientY-r.top)/state.zoom)}}
 function inside(x,y){return x>=0&&y>=0&&x<project.width&&y<project.height}
 function withinSelection(x,y){const s=state.selection;return !s||(x>=s.x&&y>=s.y&&x<s.x+s.w&&y<s.y+s.h)}
-function paintPixel(c,x,y,color,eraser=false,dither=false){const w=project.width,h=project.height,size=state.brush,off=Math.floor((size-1)/2);const positions=[[x,y]];if(state.symX)positions.push([w-1-x,y]);if(state.symY){positions.push([x,h-1-y]);if(state.symX)positions.push([w-1-x,h-1-y])}
- for(const [cx,cy]of positions){for(let py=cy-off;py<cy-off+size;py++)for(let px=cx-off;px<cx-off+size;px++){if(!inside(px,py)||!withinSelection(px,py))continue;if(dither&&(px+py)%2!==0)continue;if(eraser)c.clearRect(px,py,1,1);else{c.fillStyle=color;c.fillRect(px,py,1,1)}}}
+
+function sg2Pressure(e){return state.pressureEnabled&&e.pointerType==='pen'&&Number(e.pressure)>0?clamp(Number(e.pressure),.15,1):1}
+function sg2DitherAllows(x,y){
+ if(state.ditherPattern==='checker')return (x+y)%2===0;
+ const bayer=[[0,8,2,10],[12,4,14,6],[3,11,1,9],[15,7,13,5]];
+ const threshold=state.ditherPattern==='bayer25'?4:state.ditherPattern==='bayer75'?12:8;
+ return bayer[((y%4)+4)%4][((x%4)+4)%4]<threshold;
 }
-function bresenham(x0,y0,x1,y1,fn){let dx=Math.abs(x1-x0),dy=-Math.abs(y1-y0),sx=x0<x1?1:-1,sy=y0<y1?1:-1,err=dx+dy;while(true){fn(x0,y0);if(x0===x1&&y0===y1)break;const e=2*err;if(e>=dy){err+=dy;x0+=sx}if(e<=dx){err+=dx;y0+=sy}}}
-function strokeSegment(c,a,b,color,eraser=false,dither=false){bresenham(a.x,a.y,b.x,b.y,(x,y)=>paintPixel(c,x,y,color,eraser,dither))}
+function paintPixel(c,x,y,color,eraser=false,dither=false,pressure=1){
+ const w=project.width,h=project.height,size=clamp(Math.round(state.brush*pressure),1,16),off=Math.floor((size-1)/2);
+ const centers=[[x,y]];
+ if(state.symX)centers.push([w-1-x,y]);
+ if(state.symY){centers.push([x,h-1-y]);if(state.symX)centers.push([w-1-x,h-1-y])}
+ for(const [cx,cy] of centers){
+  const bx=cx-off,by=cy-off,mid=(size-1)/2;
+  for(let py=by;py<by+size;py++)for(let px=bx;px<bx+size;px++){
+   if(!inside(px,py)||!withinSelection(px,py))continue;
+   if(state.brushShape==='circle'&&Math.hypot(px-bx-mid,py-by-mid)>size/2)continue;
+   if(dither&&!sg2DitherAllows(px,py))continue;
+   if(eraser)c.clearRect(px,py,1,1);else{c.fillStyle=color;c.fillRect(px,py,1,1)}
+  }
+ }
+}
+function bresenham(x0,y0,x1,y1,fn){
+ let dx=Math.abs(x1-x0),dy=-Math.abs(y1-y0),sx=x0<x1?1:-1,sy=y0<y1?1:-1,err=dx+dy;
+ while(true){fn(x0,y0);if(x0===x1&&y0===y1)break;const e=2*err;if(e>=dy){err+=dy;x0+=sx}if(e<=dx){err+=dx;y0+=sy}}
+}
+function strokeSegment(c,a,b,color,eraser=false,dither=false,pressure=1){
+ bresenham(a.x,a.y,b.x,b.y,(x,y)=>paintPixel(c,x,y,color,eraser,dither,pressure))
+}
+// For a one-pixel freehand stroke, suppress the pixel at an orthogonal corner.
+// The path is restored from its pre-stroke snapshot before each redraw, so undo,
+// erasure, overlap and transparent source pixels remain deterministic.
+function sg2AppendPath(points,a,b,pressure){
+ bresenham(a.x,a.y,b.x,b.y,(x,y)=>{
+  const last=points[points.length-1];
+  if(!last||last.x!==x||last.y!==y)points.push({x,y,pressure});
+ });
+}
+function sg2DrawPath(c,points,color){
+ for(let i=0;i<points.length;i++){
+  const a=points[i-1],b=points[i],d=points[i+1];
+  const corner=a&&d&&Math.abs(a.x-d.x)===1&&Math.abs(a.y-d.y)===1
+   &&((a.x===b.x&&b.y===d.y)||(a.y===b.y&&b.x===d.x));
+  if(!corner)paintPixel(c,b.x,b.y,color,false,false,b.pressure);
+ }
+}
 function drawShape(c,tool,a,b,color){
  const x0=Math.min(a.x,b.x),y0=Math.min(a.y,b.y),x1=Math.max(a.x,b.x),y1=Math.max(a.y,b.y);
  const d=(x,y)=>paintPixel(c,x,y,color,false,false);
@@ -199,9 +241,9 @@ function handlePointerDown(e){if(e.button!==0&&e.button!==1&&e.button!==2)return
  if(tool==='move'){
   if(!state.selection)state.selection={x:0,y:0,w:project.width,h:project.height};const s={...state.selection};const base=c.getImageData(0,0,project.width,project.height);const original=copyCel(cell);state.drag={tool, start:point,last:point,base,s,original,moved:false};updateSelectionBox();return;
  }
- checkpoint();const straight=e.shiftKey&&['pencil','eraser','dither'].includes(tool);state.drag={tool,start:point,last:point,straight,base:(straight||['line','rect','ellipse'].includes(tool))?c.getImageData(0,0,project.width,project.height):null,color,moved:false};
+ checkpoint();const straight=e.shiftKey&&['pencil','eraser','dither'].includes(tool);const pixelPerfect=tool==='pencil'&&state.pixelPerfect&&state.brush===1&&state.brushShape==='square'&&!straight;state.drag={tool,start:point,last:point,straight,pixelPerfect,path:pixelPerfect?[{...point,pressure:sg2Pressure(e)}]:null,base:(straight||pixelPerfect||['line','rect','ellipse'].includes(tool))?c.getImageData(0,0,project.width,project.height):null,color,moved:false};
  if(tool==='fill'){floodFill(cell,point.x,point.y,color);finishDraw();return}
- if(['pencil','eraser','dither'].includes(tool)){paintPixel(c,point.x,point.y,color,tool==='eraser',tool==='dither');renderCanvas()}
+ if(['pencil','eraser','dither'].includes(tool)){paintPixel(c,point.x,point.y,color,tool==='eraser',tool==='dither',sg2Pressure(e));renderCanvas()}
 }
 function handlePointerMove(e){const point=canvasPoint(e);$('coordLabel').innerHTML=inside(point.x,point.y)?`x: ${point.x} &nbsp; y: ${point.y}`:'x: — &nbsp; y: —';const d=state.drag;if(!d)return;
  if(d.tool==='pan'){state.panX=d.panX+(e.clientX-d.originX);state.panY=d.panY+(e.clientY-d.originY);updateArtboard();return}
@@ -210,14 +252,32 @@ function handlePointerMove(e){const point=canvasPoint(e);$('coordLabel').innerHT
  if(d.tool==='move'){
   const dx=p.x-d.start.x,dy=p.y-d.start.y;savedMove(c,d,dx,dy);d.moved=dx!==0||dy!==0;d.last=p;state.selection={x:clamp(d.s.x+dx,0,project.width-1),y:clamp(d.s.y+dy,0,project.height-1),w:d.s.w,h:d.s.h};updateSelectionBox();renderCanvas();return;
  }
- if(['pencil','eraser','dither'].includes(d.tool)){if(d.straight)c.putImageData(d.base,0,0);strokeSegment(c,d.straight?d.start:d.last,p,d.color,d.tool==='eraser',d.tool==='dither');d.last=p;d.moved=true;renderCanvas()}
+ if(['pencil','eraser','dither'].includes(d.tool)){if(d.straight){c.putImageData(d.base,0,0);strokeSegment(c,d.start,p,d.color,d.tool==='eraser',d.tool==='dither',sg2Pressure(e))}else if(d.pixelPerfect){sg2AppendPath(d.path,d.last,p,sg2Pressure(e));c.putImageData(d.base,0,0);sg2DrawPath(c,d.path,d.color)}else{strokeSegment(c,d.last,p,d.color,d.tool==='eraser',d.tool==='dither',sg2Pressure(e))}d.last=p;d.moved=true;renderCanvas()}
  else if(['line','rect','ellipse'].includes(d.tool)){c.putImageData(d.base,0,0);drawShape(c,d.tool,d.start,p,d.color);d.last=p;d.moved=true;renderCanvas()}
 }
 function savedMove(c,d,dx,dy){c.putImageData(d.base,0,0);c.clearRect(d.s.x,d.s.y,d.s.w,d.s.h);c.drawImage(d.original,d.s.x,d.s.y,d.s.w,d.s.h,d.s.x+dx,d.s.y+dy,d.s.w,d.s.h)}
 function handlePointerUp(e){const d=state.drag;if(!d)return;if(d.tool==='pan'){$('viewport').style.cursor='crosshair';state.drag=null;return}
  if(d.tool==='select'){state.drag=null;updateSelectionBox();return}
  if(d.tool==='move'){if(d.moved){const c=ctx(selectedCel());c.putImageData(d.base,0,0);checkpoint();savedMove(c,d,d.last.x-d.start.x,d.last.y-d.start.y);finishDraw()}else state.drag=null;return}
+ if(['pencil','eraser','dither'].includes(d.tool)){const p=canvasPoint(e);if(p.x!==d.last.x||p.y!==d.last.y)handlePointerMove(e);finishDraw();return}
  if(['line','rect','ellipse'].includes(d.tool)&&!d.moved){const c=ctx(selectedCel());drawShape(c,d.tool,d.start,d.start,d.color)}finishDraw()}
+
+function sg2AdjustCel(mode){
+ const l=selectedLayer();if(l.locked||!l.visible){toast('Unlock and show the layer first');return}
+ const c=ctx(selectedCel()),image=c.getImageData(0,0,project.width,project.height),data=image.data;
+ const from=hexToRGB(state.bg),to=hexToRGB(state.fg);let changedPixels=0;
+ for(let y=0;y<project.height;y++)for(let x=0;x<project.width;x++){
+  if(!withinSelection(x,y))continue;
+  const i=(y*project.width+x)*4;
+  if(!data[i+3])continue;
+  if(mode==='replace'&&(data[i]!==from[0]||data[i+1]!==from[1]||data[i+2]!==from[2]))continue;
+  const rgb=mode==='invert'?[255-data[i],255-data[i+1],255-data[i+2]]:to;
+  if(data[i]===rgb[0]&&data[i+1]===rgb[1]&&data[i+2]===rgb[2])continue;
+  data[i]=rgb[0];data[i+1]=rgb[1];data[i+2]=rgb[2];changedPixels++;
+ }
+ if(!changedPixels){toast('No matching pixels');return}
+ checkpoint();c.putImageData(image,0,0);finishDraw();toast(changedPixels+' pixels updated');
+}
 function copySelection(cut=false){const s=state.selection||{x:0,y:0,w:project.width,h:project.height};state.clipboard=ctx(selectedCel()).getImageData(s.x,s.y,s.w,s.h);if(cut){checkpoint();ctx(selectedCel()).clearRect(s.x,s.y,s.w,s.h);finishDraw()}toast(cut?'Pixels cut':'Pixels copied')}
 function pasteSelection(){if(!state.clipboard){toast('Nothing copied yet');return}if(selectedLayer().locked){toast('Unlock layer first');return}checkpoint();const clip=state.clipboard,temp=makeCanvas(clip.width,clip.height);ctx(temp).putImageData(clip,0,0);const x=state.selection?.x??Math.floor((project.width-clip.width)/2),y=state.selection?.y??Math.floor((project.height-clip.height)/2);ctx(selectedCel()).drawImage(temp,x,y);state.selection={x:clamp(x,0,project.width-1),y:clamp(y,0,project.height-1),w:Math.min(clip.width,project.width-x),h:Math.min(clip.height,project.height-y)};finishDraw();toast('Pixels pasted')}
 function deleteSelection(){if(selectedLayer().locked)return toast('Unlock layer first');checkpoint();const s=state.selection||{x:0,y:0,w:project.width,h:project.height};ctx(selectedCel()).clearRect(s.x,s.y,s.w,s.h);finishDraw()}
@@ -381,7 +441,7 @@ function bindToolIcons(){
 function bindWorkspace(){
  try{const prior=JSON.parse(localStorage.getItem(WORKSPACE_KEY)||'null');if(prior&&typeof prior==='object'){
   workspace={...WORKSPACE_DEFAULT,...prior};workspace.dock=workspace.dock!==false;workspace.timeline=workspace.timeline!==false;
-  if(!['color','layer','navigator'].includes(workspace.tab))workspace.tab='color';
+  if(!['color','brush','layer','navigator'].includes(workspace.tab))workspace.tab='color';
   workspace.dockWidth=clamp(Number(workspace.dockWidth)||262,190,480);workspace.timelineHeight=clamp(Number(workspace.timelineHeight)||212,112,440);
  }}catch(e){/* Existing editor works without persistent workspace state. */}
  applyWorkspace();bindToolIcons();
@@ -397,7 +457,14 @@ function bindUI(){
  const viewport=$('viewport');viewport.addEventListener('pointerdown',handlePointerDown);viewport.addEventListener('pointermove',handlePointerMove);viewport.addEventListener('pointerup',handlePointerUp);viewport.addEventListener('pointercancel',handlePointerUp);viewport.addEventListener('contextmenu',e=>e.preventDefault());
  viewport.addEventListener('wheel',e=>{e.preventDefault();setZoom(state.zoom+(e.deltaY<0?1:-1))},{passive:false});
  $('zoomIn').onclick=()=>setZoom(state.zoom+1);$('zoomOut').onclick=()=>setZoom(state.zoom-1);$('fitBtn').onclick=fit;
- $('brushSize').oninput=e=>{state.brush=Number(e.target.value);$('brushSizeLabel').textContent=state.brush+' px'};
+ $('brushSize').oninput=e=>{state.brush=Number(e.target.value);$('brushSizeLabel').textContent=state.brush+' px';document.querySelectorAll('[data-sg2-preset]').forEach(b=>b.classList.toggle('selected',Number(b.dataset.sg2Preset)===state.brush))};
+ $('sg2BrushShape').onchange=e=>{state.brushShape=e.target.value;updateInspector()};
+ $('sg2DitherPattern').onchange=e=>{state.ditherPattern=e.target.value;updateInspector()};
+ $('sg2PixelPerfect').onclick=()=>{state.pixelPerfect=!state.pixelPerfect;updateInspector()};
+ $('sg2Pressure').onclick=()=>{state.pressureEnabled=!state.pressureEnabled;updateInspector()};
+ document.querySelectorAll('[data-sg2-preset]').forEach(b=>b.onclick=()=>{state.brush=clamp(Number(b.dataset.sg2Preset),1,16);updateInspector()});
+ $('sg2Invert').onclick=()=>sg2AdjustCel('invert');
+ $('sg2Replace').onclick=()=>sg2AdjustCel('replace');
  $('filledToggle').onclick=()=>{state.filled=!state.filled;updateInspector()};$('symXToggle').onclick=()=>{state.symX=!state.symX;updateInspector()};$('symYToggle').onclick=()=>{state.symY=!state.symY;updateInspector()};
  $('gridToggle').onclick=()=>action('toggle-grid');$('onionToggle').onclick=()=>action('toggle-onion');
  $('colorPicker').oninput=e=>setForeground(e.target.value);$('colorHex').addEventListener('change',e=>{if(normalHex(e.target.value))setForeground(e.target.value);else updateInspector()});
