@@ -24,7 +24,8 @@ function sg2DrawSelectionOverlay() {
   const w=project.width,h=project.height;
   if(overlay.width!==w||overlay.height!==h){overlay.width=w;overlay.height=h;}
   const g=overlay.getContext('2d');g.clearRect(0,0,w,h);
-  const mask=sg2CurrentMask();if(!mask||!state.selectionMask)return;
+  if(!state.selectionMask)return;
+  const mask=sg2CurrentMask();if(!mask)return;
   const image=g.createImageData(w,h),d=image.data;
   for(let y=0;y<h;y++)for(let x=0;x<w;x++){
     const i=y*w+x;if(!mask[i])continue;
@@ -90,12 +91,12 @@ function sg2PolygonCancel() {
 function sg2Image() {return ctx(selectedCel()).getImageData(0,0,project.width,project.height);}
 function sg2WritePixels(bytes) {ctx(selectedCel()).putImageData(new ImageData(bytes,project.width,project.height),0,0);}
 function sg2Copy(cut=false) {
+  if(cut&&(selectedLayer().locked||!selectedLayer().visible)){toast('Unlock and show layer first');return;}
   const w=project.width,h=project.height,mask=sg2CurrentMask()||SG2Selection.all(w,h);
   const pixels=sg2Image();const selection=SG2Selection.copied(pixels.data,mask,w,h);
   if(!selection){toast('Selection is empty');return;}
   state.clipboard=new ImageData(selection.data,selection.width,selection.height);
   if(cut){
-    if(selectedLayer().locked||!selectedLayer().visible){toast('Unlock and show layer first');return;}
     const cleared=SG2Selection.cleared(pixels.data,mask,w,h);
     if(cleared.changed){checkpoint();sg2WritePixels(cleared.data);finishDraw();}
   }
@@ -112,6 +113,7 @@ function sg2Transform(operation) {
   if(selectedLayer().locked||!selectedLayer().visible){toast('Unlock and show layer first');return;}
   const w=project.width,h=project.height,previous=sg2CurrentMask();
   if((operation==='rotate-cw'||operation==='rotate-ccw')&&!previous){toast('Select pixels before rotating');return;}
+  if((operation==='rotate-cw'||operation==='rotate-ccw')&&previous){const b=SG2Selection.bounds(previous,w,h);if(!b){toast('Selection is empty');return;}const x=b.x+Math.floor((b.w-b.h)/2),y=b.y+Math.floor((b.h-b.w)/2);if(x<0||y<0||x+b.h>w||y+b.w>h){toast('Move selection inward before rotating');return;}}
   const source=sg2Image(),result=SG2Selection.transformed(source.data,previous||SG2Selection.all(w,h),w,h,operation);
   if(!result.changed){toast('Nothing to transform');return;}
   checkpoint();sg2WritePixels(result.data);sg2SetSelection(previous?result.mask:null);finishDraw();
