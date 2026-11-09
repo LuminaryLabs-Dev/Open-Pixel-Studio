@@ -304,6 +304,14 @@ body.is-resizing *{cursor:inherit!important}
 .sg2-brush-panel #sg2Tolerance{width:85px;max-width:90px}
 .sg2-brush-panel #sg2ToleranceValue{font-size:10px;color:var(--accent);min-width:22px;text-align:right}
 </style>
+<style>
+/* SG-2 paint/gradient parity controls */
+.sg2-brush-panel .sg2-operations button{flex:1}
+.sg2-brush-panel label output{min-width:24px;text-align:right;color:var(--accent)}
+.sg2-brush-panel label input[type=range]{min-width:56px;width:88px}
+.sg2-brush-panel label input[type=checkbox]{width:16px;height:16px;flex-shrink:0}
+.sg2-brush-panel .sg2-hint{font-size:10px;line-height:1.45}
+</style>
 </head>
 <body>
 <div class="app">
@@ -341,6 +349,7 @@ body.is-resizing *{cursor:inherit!important}
    <button class="tool" data-tool="fill" title="Fill bucket (G)"><span class="tool-symbol">◈</span><small>G</small></button>
    <button class="tool" data-tool="eyedropper" title="Eyedropper (I)"><span class="tool-symbol">◉</span><small>I</small></button>
    <button class="tool" data-tool="dither" title="Dither brush (D)"><span class="tool-symbol">▦</span><small>D</small></button>
+   <button class="tool" data-tool="gradient" title="Gradient (T)"><span class="tool-symbol">▨</span><small>T</small></button>
    <div class="rail-divider"></div><div class="rail-label">SHAPE</div>
    <button class="tool" data-tool="line" title="Line (L)"><span class="tool-symbol">╱</span><small>L</small></button>
    <button class="tool" data-tool="rect" title="Rectangle (R)"><span class="tool-symbol">▢</span><small>R</small></button>
@@ -391,7 +400,19 @@ body.is-resizing *{cursor:inherit!important}
     <div class="inspector-section color-section" id="dock-color" role="tabpanel" aria-labelledby="tabColor"><div class="section-heading">COLOR <span class="section-faint">FOREGROUND / BACKGROUND</span></div><div class="color-main"><div class="color-stack"><button id="bgSwatch" class="stack-bg" title="Secondary color"></button><button id="fgSwatch" class="stack-fg" title="Primary color"></button><button id="swapColors" class="swap-colors" title="Swap colors (X)">⇄</button></div><div class="color-meta"><label for="colorHex">HEX</label><div class="hex-wrap"><span>#</span><input id="colorHex" value="A6E35F" maxlength="6" spellcheck="false" aria-label="Hex color"/></div></div><input type="color" id="colorPicker" value="#a6e35f" aria-label="Color picker" title="Pick foreground color" /></div>
      <div class="palette-heading"><span>PALETTE</span><select id="paletteSelect" aria-label="Color palette"><option value="DB32">DawnBringer 32</option><option value="PICO8">PICO-8</option><option value="FANTASY">Fantasy 24</option><option value="CUSTOM">Custom</option></select></div><div id="paletteGrid" class="palette-grid"></div><div class="palette-bottom"><span id="paletteInfo">32 swatches</span><button id="addColorBtn">+ Add color</button></div>
     </div>
-    <div class="inspector-section sg2-brush-panel" id="dock-brush" role="tabpanel" aria-labelledby="tabBrush"><div class="section-heading">DRAWING OPTIONS <span class="section-faint">SG-2</span></div><label>Brush shape<select id="sg2BrushShape"><option value="square">Square</option><option value="circle">Circle</option></select></label><div class="sg2-preset-row" aria-label="Brush size presets"><button data-sg2-preset="1">1px</button><button data-sg2-preset="2">2px</button><button data-sg2-preset="4">4px</button><button data-sg2-preset="8">8px</button><button data-sg2-preset="16">16px</button></div><button id="sg2PixelPerfect" class="sg2-option" aria-pressed="true">Pixel-perfect pencil</button><button id="sg2Pressure" class="sg2-option" aria-pressed="true">Pen pressure → size</button><label>Dither coverage<select id="sg2DitherPattern"><option value="checker">Checker · 50%</option><option value="bayer25">Bayer · 25%</option><option value="bayer50">Bayer · 50%</option><option value="bayer75">Bayer · 75%</option></select></label><div class="section-heading sg2-fx-heading">PIXEL ADJUSTMENTS</div><p class="sg2-hint">Affects visible pixels in active cel, within selection. Undo available.</p><button class="sg2-option" id="sg2Invert">Invert colors</button><button class="sg2-option" id="sg2Replace">Replace secondary → primary</button><div class="section-heading sg2-fx-heading">SELECTION &amp; TRANSFORM</div>
+    <div class="inspector-section sg2-brush-panel" id="dock-brush" role="tabpanel" aria-labelledby="tabBrush"><div class="section-heading">DRAWING OPTIONS <span class="section-faint">SG-2</span></div><label>Brush shape<select id="sg2BrushShape"><option value="square">Square</option><option value="circle">Circle</option><option value="custom">Custom brush</option></select></label><div class="sg2-preset-row" aria-label="Brush size presets"><button data-sg2-preset="1">1px</button><button data-sg2-preset="2">2px</button><button data-sg2-preset="4">4px</button><button data-sg2-preset="8">8px</button><button data-sg2-preset="16">16px</button></div><button id="sg2PixelPerfect" class="sg2-option" aria-pressed="true">Pixel-perfect pencil</button><button id="sg2Pressure" class="sg2-option" aria-pressed="true">Pen pressure → size</button><label>Dither coverage<select id="sg2DitherPattern"><option value="checker">Checker · 50%</option><option value="bayer25">Bayer · 25%</option><option value="bayer50">Bayer · 50%</option><option value="bayer75">Bayer · 75%</option></select></label><div class="section-heading sg2-fx-heading">PIXEL ADJUSTMENTS</div><p class="sg2-hint">Affects visible pixels in active cel, within selection. Undo available.</p><button class="sg2-option" id="sg2Invert">Invert colors</button><button class="sg2-option" id="sg2Replace">Replace secondary → primary</button><div class="section-heading sg2-fx-heading">CUSTOM BRUSH / GRADIENT</div>
+      <div class="sg2-operations"><button class="sg2-option" id="sg2CaptureBrush" title="Capture current selected visible pixels as a reusable brush">Capture brush</button><button class="sg2-option" id="sg2ResetBrush">Clear brush</button></div>
+      <label>Custom brush ink<select id="sg2BrushInk"><option value="image">Original colors</option><option value="tint">Foreground tint</option></select></label>
+      <label>Gradient mode<select id="sg2GradientMode"><option value="smooth">Smooth RGBA</option><option value="dither">Pixel-dithered</option></select></label>
+      <p class="sg2-hint">Use Gradient tool (T): drag from foreground to background. Custom brush captures opaque pixels (maximum 64×64).</p>
+      <div class="section-heading sg2-fx-heading">COLOR &amp; OUTLINE</div>
+      <label>Hue shift <output id="sg2HueValue">0</output><input id="sg2Hue" type="range" min="-180" max="180" value="0"/></label>
+      <label>Saturation <output id="sg2SaturationValue">0</output><input id="sg2Saturation" type="range" min="-100" max="100" value="0"/></label>
+      <label>Brightness <output id="sg2ValueValue">0</output><input id="sg2Value" type="range" min="-100" max="100" value="0"/></label>
+      <button class="sg2-option" id="sg2ApplyHSV">Apply HSV to active cel</button>
+      <label>Outline width<select id="sg2OutlineThickness"><option value="1">1 px</option><option value="2">2 px</option><option value="3">3 px</option></select></label>
+      <label><span>Diagonal neighbors</span><input id="sg2OutlineDiagonal" type="checkbox"/></label>
+      <button class="sg2-option" id="sg2ApplyOutline">Outline with foreground color</button><div class="section-heading sg2-fx-heading">SELECTION &amp; TRANSFORM</div>
       <label>Combine<select id="sg2SelectMode" aria-label="Selection combination"><option value="replace">Replace</option><option value="add">Add</option><option value="subtract">Subtract</option><option value="intersect">Intersect</option></select></label>
       <label>Color tolerance <span id="sg2ToleranceValue">0</span><input id="sg2Tolerance" type="range" min="0" max="255" step="1" value="0" aria-label="Selection color tolerance"/></label>
       <div class="sg2-operations"><button class="sg2-option" id="sg2SelectAll">Select all</button><button class="sg2-option" id="sg2InvertSelection">Invert selection</button></div>
@@ -408,7 +429,7 @@ body.is-resizing *{cursor:inherit!important}
 <input id="fileInput" type="file" accept=".npx,.json,image/png,image/webp" hidden/>
 <dialog id="newDialog" class="modal"><form method="dialog" id="newForm"><div class="modal-top"><div class="modal-kicker">FILE / NEW</div><h2>New sprite</h2><p>Create an RGBA document with a transparent or solid background.</p></div><label>Project name<input name="name" type="text" value="Untitled Sprite" maxlength="60" required /></label><div class="modal-grid"><label>Width (px)<input name="width" type="number" value="64" min="1" max="512" required /></label><label>Height (px)<input name="height" type="number" value="64" min="1" max="512" required /></label></div><label>First layer<select name="background"><option value="transparent">Transparent</option><option value="white">White background</option></select></label><div class="modal-actions"><button type="button" class="ghost-button" id="newCancel">Cancel</button><button type="submit" class="primary-button">Create sprite</button></div></form></dialog>
 <dialog id="resizeDialog" class="modal"><form method="dialog" id="resizeForm"><div class="modal-top"><div class="modal-kicker">SPRITE PROPERTIES</div><h2>Resize canvas</h2><p>Resizes the canvas for every layer and frame, preserving artwork from the upper-left corner.</p></div><div class="modal-grid"><label>Width (px)<input name="width" type="number" min="1" max="512" required /></label><label>Height (px)<input name="height" type="number" min="1" max="512" required /></label></div><div class="modal-actions"><button type="button" class="ghost-button" id="resizeCancel">Cancel</button><button type="submit" class="primary-button">Resize</button></div></form></dialog>
-<dialog id="helpDialog" class="modal help-modal"><div class="modal-kicker">HELP / KEYBOARD</div><h2>Shortcuts</h2><div class="shortcut-columns"><div><h3>Tools</h3><p><kbd>P</kbd> Pencil</p><p><kbd>E</kbd> Eraser</p><p><kbd>G</kbd> Fill</p><p><kbd>I</kbd> Eyedropper</p><p><kbd>D</kbd> Dither</p><p><kbd>L</kbd> Line</p><p><kbd>R</kbd> Rectangle</p><p><kbd>O</kbd> Ellipse</p><p><kbd>M</kbd> Rectangle selection</p><p><kbd>J</kbd> Ellipse selection</p><p><kbd>Q</kbd> Lasso selection</p><p><kbd>K</kbd> Polygon selection</p><p><kbd>W</kbd> Magic wand</p><p><kbd>V</kbd> Move selection</p><p><kbd>H</kbd> Hand / pan</p></div><div><h3>Workspace</h3><p><kbd>Ctrl Z/Y</kbd> Undo / redo</p><p><kbd>Ctrl S</kbd> Save project</p><p><kbd>Ctrl O</kbd> Open project</p><p><kbd>Ctrl N</kbd> New document</p><p><kbd>Ctrl C/X/V</kbd> Copy / cut / paste</p><p><kbd>Ctrl D</kbd> Deselect</p><p><kbd>Del</kbd> Clear selected pixels</p><p><kbd>X</kbd> Swap colors</p><p><kbd>Enter</kbd> Play / pause</p><p><kbd>[ / ]</kbd> Brush size</p><p><kbd>Space + drag</kbd> Pan</p><p><kbd>Tab</kbd> Toggle right dock</p><p><kbd>Shift Tab</kbd> Toggle timeline</p><p><kbd>F</kbd> Fit artwork</p><p><kbd>Wheel</kbd> Zoom</p></div></div><div class="modal-actions"><button id="helpClose" class="primary-button">Done</button></div></dialog>
+<dialog id="helpDialog" class="modal help-modal"><div class="modal-kicker">HELP / KEYBOARD</div><h2>Shortcuts</h2><div class="shortcut-columns"><div><h3>Tools</h3><p><kbd>P</kbd> Pencil</p><p><kbd>E</kbd> Eraser</p><p><kbd>G</kbd> Fill</p><p><kbd>I</kbd> Eyedropper</p><p><kbd>D</kbd> Dither</p><p><kbd>T</kbd> Gradient</p><p><kbd>L</kbd> Line</p><p><kbd>R</kbd> Rectangle</p><p><kbd>O</kbd> Ellipse</p><p><kbd>M</kbd> Rectangle selection</p><p><kbd>J</kbd> Ellipse selection</p><p><kbd>Q</kbd> Lasso selection</p><p><kbd>K</kbd> Polygon selection</p><p><kbd>W</kbd> Magic wand</p><p><kbd>V</kbd> Move selection</p><p><kbd>H</kbd> Hand / pan</p></div><div><h3>Workspace</h3><p><kbd>Ctrl Z/Y</kbd> Undo / redo</p><p><kbd>Ctrl S</kbd> Save project</p><p><kbd>Ctrl O</kbd> Open project</p><p><kbd>Ctrl N</kbd> New document</p><p><kbd>Ctrl C/X/V</kbd> Copy / cut / paste</p><p><kbd>Ctrl D</kbd> Deselect</p><p><kbd>Del</kbd> Clear selected pixels</p><p><kbd>X</kbd> Swap colors</p><p><kbd>Enter</kbd> Play / pause</p><p><kbd>[ / ]</kbd> Brush size</p><p><kbd>Space + drag</kbd> Pan</p><p><kbd>Tab</kbd> Toggle right dock</p><p><kbd>Shift Tab</kbd> Toggle timeline</p><p><kbd>F</kbd> Fit artwork</p><p><kbd>Wheel</kbd> Zoom</p></div></div><div class="modal-actions"><button id="helpClose" class="primary-button">Done</button></div></dialog>
 <script>
 /* SG-2 selection/transform raster engine. Offline, dependency-free, no DOM.
    Masks use one byte per source pixel: 0 unselected, 1 selected. */
@@ -728,6 +749,202 @@ function sg2InvertSelection(){const base=sg2CurrentMask();if(!base)return sg2Set
 
 </script>
 <script>
+/* SG-2 pass 3: bounded, deterministic RGBA painting effects.
+   Pixel buffers are unpremultiplied RGBA, one byte per channel. No DOM needed. */
+(function (root, factory) {
+  const api = factory();
+  if (typeof module === 'object' && module.exports) module.exports = api;
+  else root.SG2Paint = api;
+})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  'use strict';
+  const BAYER4 = [0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5];
+  const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
+  const integer = (n, lo, hi) => clamp(Math.trunc(Number(n) || 0), lo, hi);
+  function validate(pixels, w, h, mask) {
+    if (!Number.isInteger(w) || !Number.isInteger(h) || w < 1 || h < 1 || w * h > 512 * 512 ||
+      !pixels || pixels.length !== w * h * 4 || (mask && mask.length !== w * h))
+      throw new RangeError('SG-2 pixel buffer size mismatch');
+  }
+  function rgba(color) {
+    if (Array.isArray(color) && color.length >= 3)
+      return [integer(color[0],0,255),integer(color[1],0,255),integer(color[2],0,255),color.length > 3 ? integer(color[3],0,255) : 255];
+    const hex = String(color || '').replace(/^#/, '');
+    if (!/^[0-9a-f]{6}([0-9a-f]{2})?$/i.test(hex)) throw new TypeError('Expected #RRGGBB or #RRGGBBAA');
+    return [parseInt(hex.slice(0,2),16),parseInt(hex.slice(2,4),16),parseInt(hex.slice(4,6),16),hex.length===8?parseInt(hex.slice(6,8),16):255];
+  }
+  function samePixel(a,b,off) { for (let k=0;k<4;k++) if (a[off+k]!==b[k]) return false; return true; }
+  function linearGradient(pixels,w,h,mask,start,end,first,second,mode='smooth') {
+    validate(pixels,w,h,mask);
+    if (mode !== 'smooth' && mode !== 'dither') throw new RangeError('Unknown gradient mode');
+    const a=rgba(first),b=rgba(second),out=new Uint8ClampedArray(pixels);
+    const dx=end.x-start.x,dy=end.y-start.y,den=dx*dx+dy*dy;
+    if (!Number.isFinite(den)) throw new RangeError('Invalid gradient coordinates');
+    let changed=0;
+    for(let y=0;y<h;y++) for(let x=0;x<w;x++) {
+      const n=y*w+x;if(mask&&!mask[n])continue;
+      const t=den===0?0:clamp(((x-start.x)*dx+(y-start.y)*dy)/den,0,1);
+      const c=new Array(4);
+      if(mode==='smooth')for(let k=0;k<4;k++)c[k]=Math.round(a[k]+(b[k]-a[k])*t);
+      else {const t2=t>=1?true:t>0&&t*16>BAYER4[(y&3)*4+(x&3)];for(let k=0;k<4;k++)c[k]=t2?b[k]:a[k];}
+      const i=n*4;if(samePixel(out,c,i))continue;
+      out.set(c,i);changed++;
+    }
+    return {data:out,changed};
+  }
+  function rgbToHsv(r,g,b){
+    r/=255;g/=255;b/=255;const max=Math.max(r,g,b),min=Math.min(r,g,b),d=max-min;
+    let h=0;if(d){if(max===r)h=((g-b)/d)%6;else if(max===g)h=(b-r)/d+2;else h=(r-g)/d+4;h=(h*60+360)%360;}
+    return [h,max===0?0:d/max,max];
+  }
+  function hsvToRgb(h,s,v){
+    const c=v*s,x=c*(1-Math.abs((h/60)%2-1)),m=v-c;
+    const sector=Math.floor(h/60)%6;
+    const values=sector===0?[c,x,0]:sector===1?[x,c,0]:sector===2?[0,c,x]:sector===3?[0,x,c]:sector===4?[x,0,c]:[c,0,x];
+    return values.map(t=>Math.round(clamp(t+m,0,1)*255));
+  }
+  function adjustHSV(pixels,w,h,mask,hue=0,saturation=0,value=0){
+    validate(pixels,w,h,mask);
+    hue=Number(hue)||0;saturation=clamp((Number(saturation)||0)/100,-1,1);value=clamp((Number(value)||0)/100,-1,1);
+    if(!Number.isFinite(hue))throw new RangeError('Invalid hue');
+    const out=new Uint8ClampedArray(pixels);let changed=0;
+    for(let n=0;n<w*h;n++){
+      if((mask&&!mask[n])||!pixels[n*4+3])continue;
+      const i=n*4,[h0,s0,v0]=rgbToHsv(pixels[i],pixels[i+1],pixels[i+2]);
+      const rgb=hsvToRgb((h0+hue%360+360)%360,clamp(s0+saturation,0,1),clamp(v0+value,0,1));
+      if(rgb.every((v,k)=>v===pixels[i+k]))continue;
+      out.set(rgb,i);changed++;
+    }
+    return {data:out,changed};
+  }
+  function outline(pixels,w,h,mask,color='#000000',diagonal=false,thickness=1){
+    validate(pixels,w,h,mask);const out=new Uint8ClampedArray(pixels),ink=rgba(color);
+    thickness=integer(thickness,1,3);
+    const originalOpaque=new Uint8Array(w*h),coverage=new Uint8Array(w*h);
+    for(let n=0;n<w*h;n++)if(pixels[n*4+3]&&(!mask||mask[n]))originalOpaque[n]=coverage[n]=1;
+    const neighbors=diagonal?[[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,1],[1,-1],[-1,-1]]:[[1,0],[-1,0],[0,1],[0,-1]];
+    for(let pass=0;pass<thickness;pass++){
+      const grown=new Uint8Array(coverage);
+      for(let n=0;n<coverage.length;n++)if(coverage[n]){
+        const x=n%w,y=(n/w)|0;
+        for(const [dx,dy] of neighbors){const xx=x+dx,yy=y+dy;if(xx<0||xx>=w||yy<0||yy>=h)continue;
+          const dst=yy*w+xx;if((!mask||mask[dst])&&!pixels[dst*4+3])grown[dst]=1;
+        }
+      }
+      coverage.set(grown);
+    }
+    let changed=0;
+    for(let n=0;n<coverage.length;n++)if(coverage[n]&&!originalOpaque[n]&&!pixels[n*4+3]){out.set(ink,n*4);changed++;}
+    return {data:out,changed};
+  }
+  function captureBrush(pixels,w,h,mask) {
+    validate(pixels,w,h,mask);
+    let minX=w,minY=h,maxX=-1,maxY=-1;
+    for(let n=0;n<w*h;n++)if((!mask||mask[n])&&pixels[n*4+3]){
+      const x=n%w,y=(n/w)|0;minX=Math.min(x,minX);minY=Math.min(y,minY);maxX=Math.max(x,maxX);maxY=Math.max(y,maxY);
+    }
+    if(maxX<minX)return null;
+    const bw=maxX-minX+1,bh=maxY-minY+1;
+    if(bw>64||bh>64)throw new RangeError('Custom brush may be at most 64×64 pixels');
+    const data=new Uint8ClampedArray(bw*bh*4);
+    for(let y=0;y<bh;y++)for(let x=0;x<bw;x++){
+      const src=(y+minY)*w+x+minX;
+      if(!mask||mask[src])data.set(pixels.subarray(src*4,src*4+4),(y*bw+x)*4);
+    }
+    return {width:bw,height:bh,data};
+  }
+  function stamp(pixels,w,h,brush,centerX,centerY,color='#ffffff',mode='image',mask=null,erase=false){
+    validate(pixels,w,h,mask);
+    if(!brush||!Number.isInteger(brush.width)||!Number.isInteger(brush.height)||brush.width<1||brush.height<1||
+       brush.width>64||brush.height>64||!brush.data||brush.data.length!==brush.width*brush.height*4)
+      throw new RangeError('Invalid custom brush');
+    if(mode!=='image'&&mode!=='tint')throw new RangeError('Unknown brush ink mode');
+    const tint=rgba(color);let changed=0;
+    const offsetX=Math.trunc(centerX)-Math.floor(brush.width/2),offsetY=Math.trunc(centerY)-Math.floor(brush.height/2);
+    for(let y=0;y<brush.height;y++)for(let x=0;x<brush.width;x++){
+      const xx=offsetX+x,yy=offsetY+y;if(xx<0||yy<0||xx>=w||yy>=h)continue;
+      const n=yy*w+xx;if(mask&&!mask[n])continue;
+      const src=(y*brush.width+x)*4,alpha=brush.data[src+3]/255;if(!alpha)continue;
+      const at=n*4,oldA=pixels[at+3]/255;
+      if(erase){const newA=oldA*(1-alpha);const next=Math.round(newA*255);if(next===pixels[at+3])continue;
+        pixels[at+3]=next;if(next===0)pixels.fill(0,at,at+4);changed++;continue;}
+      const srcColor=mode==='tint'?tint:brush.data;
+      const sr=mode==='tint'?srcColor[0]:srcColor[src],sg=mode==='tint'?srcColor[1]:srcColor[src+1],sb=mode==='tint'?srcColor[2]:srcColor[src+2];
+      const newA=alpha+oldA*(1-alpha);if(!newA)continue;
+      const next=[Math.round((sr*alpha+pixels[at]*oldA*(1-alpha))/newA),Math.round((sg*alpha+pixels[at+1]*oldA*(1-alpha))/newA),Math.round((sb*alpha+pixels[at+2]*oldA*(1-alpha))/newA),Math.round(newA*255)];
+      if(samePixel(pixels,next,at))continue;pixels.set(next,at);changed++;
+    }
+    return changed;
+  }
+  return Object.freeze({linearGradient,adjustHSV,outline,captureBrush,stamp,rgba});
+});
+
+</script>
+<script>
+/* SG-2 pass 3 editor bindings: transparent/selection-safe editing. Session-only tool state. */
+'use strict';
+function sg2CaptureCustomBrush() {
+  const w=project.width,h=project.height;
+  try {
+    const pixels=ctx(selectedCel()).getImageData(0,0,w,h).data;
+    const brush=SG2Paint.captureBrush(pixels,w,h,sg2CurrentMask());
+    if(!brush){toast('No visible selected pixels to capture');return;}
+    state.sg2CustomBrush=brush;state.brushShape='custom';updateInspector();
+    toast('Captured '+brush.width+' × '+brush.height+' custom brush');
+  }catch(error){toast(error.message||'Unable to capture brush');}
+}
+function sg2ResetCustomBrush(){state.sg2CustomBrush=null;if(state.brushShape==='custom')state.brushShape='square';updateInspector();toast('Custom brush cleared')}
+function sg2CustomStamp(c,x,y,color,eraser=false,pressure=1){
+  const brush=state.sg2CustomBrush;if(!brush)return;
+  const centers=[[x,y]],w=project.width,h=project.height;
+  if(state.symX)centers.push([w-1-x,y]);
+  if(state.symY){centers.push([x,h-1-y]);if(state.symX)centers.push([w-1-x,h-1-y]);}
+  const bw=brush.width,bh=brush.height;
+  let source=brush;
+  if(pressure<.999){const data=new Uint8ClampedArray(brush.data);for(let i=3;i<data.length;i+=4)data[i]=Math.round(data[i]*pressure);source={width:bw,height:bh,data};}
+  const g=c.getContext('2d',{willReadFrequently:true});
+  for(const [cx,cy] of centers){
+    const left=cx-Math.floor(bw/2),top=cy-Math.floor(bh/2);
+    const patch=g.getImageData(left,top,bw,bh),allowed=new Uint8Array(bw*bh);
+    let any=false;
+    for(let yy=0;yy<bh;yy++)for(let xx=0;xx<bw;xx++){
+      const xxg=left+xx,yyg=top+yy;
+      if(xxg>=0&&yyg>=0&&xxg<w&&yyg<h&&withinSelection(xxg,yyg)){allowed[yy*bw+xx]=1;any=true;}
+    }
+    if(!any)continue;
+    if(SG2Paint.stamp(patch.data,bw,bh,source,Math.floor(bw/2),Math.floor(bh/2),color,state.sg2InkMode||'image',allowed,eraser))g.putImageData(patch,left,top);
+  }
+}
+function sg2GradientPreview(d,point){
+  const mask=sg2CurrentMask();
+  const result=SG2Paint.linearGradient(d.base.data,project.width,project.height,mask,d.start,point,d.color,d.altColor,state.sg2GradientMode||'smooth');
+  ctx(selectedCel()).putImageData(new ImageData(result.data,project.width,project.height),0,0);
+  return result.changed;
+}
+function sg2RunPaintEffect(name){
+  const layer=selectedLayer();if(layer.locked||!layer.visible){toast('Unlock and show the layer first');return;}
+  const w=project.width,h=project.height,pixels=ctx(selectedCel()).getImageData(0,0,w,h),mask=sg2CurrentMask();
+  let result;
+  if(name==='hsv')result=SG2Paint.adjustHSV(pixels.data,w,h,mask,Number($('sg2Hue').value),Number($('sg2Saturation').value),Number($('sg2Value').value));
+  else if(name==='outline')result=SG2Paint.outline(pixels.data,w,h,mask,state.fg,$('sg2OutlineDiagonal').checked,Number($('sg2OutlineThickness').value));
+  else throw new Error('Unsupported paint adjustment');
+  if(!result.changed){toast('No matching pixels to modify');return;}
+  checkpoint();ctx(selectedCel()).putImageData(new ImageData(result.data,w,h),0,0);finishDraw();
+  toast(result.changed+' pixels updated');
+}
+function sg2BindPaintUI(){
+  $('sg2CaptureBrush').onclick=sg2CaptureCustomBrush;
+  $('sg2ResetBrush').onclick=sg2ResetCustomBrush;
+  $('sg2BrushInk').onchange=e=>{state.sg2InkMode=e.target.value;};
+  $('sg2GradientMode').onchange=e=>{state.sg2GradientMode=e.target.value;};
+  $('sg2ApplyHSV').onclick=()=>sg2RunPaintEffect('hsv');
+  $('sg2ApplyOutline').onclick=()=>sg2RunPaintEffect('outline');
+  for(const [id,out] of [['sg2Hue','sg2HueValue'],['sg2Saturation','sg2SaturationValue'],['sg2Value','sg2ValueValue']]){
+    $(id).oninput=e=>{$(out).textContent=e.target.value;};
+  }
+}
+
+</script>
+<script>
 /* Nexus Pixel Studio v0.1 — self-contained HTML Canvas pixel editor.
    RGBA document model: a separate transparent canvas for every layer/frame cel.
    Data stays on the user's device; no accounts or remote services required. */
@@ -790,7 +1007,7 @@ function seedProject(){
  return result;
 }
 let project, history=[], future=[];
-let state={tool:'pencil',frame:0,layer:1,fg:'#A6E35F',bg:'#263861',brush:1,brushShape:'square',pixelPerfect:true,pressureEnabled:true,ditherPattern:'checker',zoom:8,panX:0,panY:0,grid:false,onion:false,symX:false,symY:false,filled:false,playing:false,selection:null,clipboard:null,drag:null,space:false,dirty:false};
+let state={tool:'pencil',frame:0,layer:1,fg:'#A6E35F',bg:'#263861',brush:1,brushShape:'square',sg2CustomBrush:null,sg2InkMode:'image',sg2GradientMode:'smooth',pixelPerfect:true,pressureEnabled:true,ditherPattern:'checker',zoom:8,panX:0,panY:0,grid:false,onion:false,symX:false,symY:false,filled:false,playing:false,selection:null,clipboard:null,drag:null,space:false,dirty:false};
 const maxHistory=24, historyMemoryLimit=80*1024*1024;
 const documentMemoryLimit=96*1024*1024;
 function fitsMemoryBudget(width=project.width,height=project.height,frames=project.frames.length,layers=project.layers.length){return width*height*4*frames*layers<=documentMemoryLimit}
@@ -902,6 +1119,7 @@ function sg2DitherAllows(x,y){
  return bayer[((y%4)+4)%4][((x%4)+4)%4]<threshold;
 }
 function paintPixel(c,x,y,color,eraser=false,dither=false,pressure=1){
+ if(state.brushShape==='custom'&&state.sg2CustomBrush){sg2CustomStamp(c,x,y,color,eraser,pressure);return}
  const w=project.width,h=project.height,size=clamp(Math.round(state.brush*pressure),1,16),off=Math.floor((size-1)/2);
  const centers=[[x,y]];
  if(state.symX)centers.push([w-1-x,y]);
@@ -972,7 +1190,12 @@ function handlePointerDown(e){if(e.button!==0&&e.button!==1&&e.button!==2)return
   if(sg2StartMove(point))return;
   if(!state.selection)state.selection={x:0,y:0,w:project.width,h:project.height};const s={...state.selection};const base=c.getImageData(0,0,project.width,project.height);const original=copyCel(cell);state.drag={tool, start:point,last:point,base,s,original,moved:false};updateSelectionBox();return;
  }
- checkpoint();const straight=e.shiftKey&&['pencil','eraser','dither'].includes(tool);const pixelPerfect=tool==='pencil'&&state.pixelPerfect&&state.brush===1&&state.brushShape==='square'&&!straight;state.drag={tool,start:point,last:point,straight,pixelPerfect,path:pixelPerfect?[{...point,pressure:sg2Pressure(e)}]:null,base:(straight||pixelPerfect||['line','rect','ellipse'].includes(tool))?c.getImageData(0,0,project.width,project.height):null,color,moved:false};
+ checkpoint();
+ if(tool==='gradient'){
+  state.drag={tool:'gradient',start:point,last:point,color,altColor:e.button===2?state.fg:state.bg,base:c.getImageData(0,0,project.width,project.height),moved:false};
+  sg2GradientPreview(state.drag,point);renderCanvas();return;
+ }
+ const straight=e.shiftKey&&['pencil','eraser','dither'].includes(tool);const pixelPerfect=tool==='pencil'&&state.pixelPerfect&&state.brush===1&&state.brushShape==='square'&&!straight;state.drag={tool,start:point,last:point,straight,pixelPerfect,path:pixelPerfect?[{...point,pressure:sg2Pressure(e)}]:null,base:(straight||pixelPerfect||['line','rect','ellipse'].includes(tool))?c.getImageData(0,0,project.width,project.height):null,color,moved:false};
  if(tool==='fill'){floodFill(cell,point.x,point.y,color);finishDraw();return}
  if(['pencil','eraser','dither'].includes(tool)){paintPixel(c,point.x,point.y,color,tool==='eraser',tool==='dither',sg2Pressure(e));renderCanvas()}
 }
@@ -982,6 +1205,7 @@ function handlePointerMove(e){const point=canvasPoint(e);$('coordLabel').innerHT
  const l=selectedLayer(),c=ctx(l.cels[state.frame]);const p={x:clamp(point.x,0,project.width-1),y:clamp(point.y,0,project.height-1)};
  if(d.tool==='sg2select'){sg2SelectionMove(p);return}
  if(d.tool==='sg2move'){sg2MovePreview(p);return}
+ if(d.tool==='gradient'){sg2GradientPreview(d,p);d.last=p;d.moved=true;renderCanvas();return}
  if(d.tool==='move'){
   const dx=p.x-d.start.x,dy=p.y-d.start.y;savedMove(c,d,dx,dy);d.moved=dx!==0||dy!==0;d.last=p;state.selection={x:clamp(d.s.x+dx,0,project.width-1),y:clamp(d.s.y+dy,0,project.height-1),w:d.s.w,h:d.s.h};updateSelectionBox();renderCanvas();return;
  }
@@ -992,6 +1216,7 @@ function savedMove(c,d,dx,dy){c.putImageData(d.base,0,0);c.clearRect(d.s.x,d.s.y
 function handlePointerUp(e){const d=state.drag;if(!d)return;if(d.tool==='pan'){$('viewport').style.cursor='crosshair';state.drag=null;return}
  if(d.tool==='sg2select'){sg2SelectionFinish(e);return}
  if(d.tool==='sg2move'){sg2MoveFinish(e);return}
+ if(d.tool==='gradient'){const p=canvasPoint(e);sg2GradientPreview(d,{x:clamp(p.x,0,project.width-1),y:clamp(p.y,0,project.height-1)});finishDraw();return}
  if(d.tool==='select'){state.drag=null;updateSelectionBox();return}
  if(d.tool==='move'){if(d.moved){const c=ctx(selectedCel());c.putImageData(d.base,0,0);checkpoint();savedMove(c,d,d.last.x-d.start.x,d.last.y-d.start.y);finishDraw()}else state.drag=null;return}
  if(['pencil','eraser','dither'].includes(d.tool)){const p=canvasPoint(e);if(p.x!==d.last.x||p.y!==d.last.y)handlePointerMove(e);finishDraw();return}
@@ -1165,6 +1390,7 @@ function bindToolIcons(){
  fill:'<path d="m12 3 8.5 8.5-8.5 8.5L3.5 11.5 12 3Z"/><path d="M5.5 13.5h13M7 7l4 4"/>',
  eyedropper:'<path d="M13 6l5-5 5 5-5 5M10 9l5 5M14.8 9.2 8.2 15.8 5 19l-3 1 1-3 3.2-3.2L12.8 7"/>',
  dither:'<path d="M3 3h18v18H3zM9 3v18M15 3v18M3 9h18M3 15h18"/><path d="M3 3h6v6H3zM15 9h6v6h-6zM9 15h6v6H9z" fill="currentColor" stroke="none"/>',
+ gradient:'<rect x="3" y="5" width="18" height="14"/><path d="M6 15h12M9 10h1M13 10h1M17 10h1"/>',
  line:'<path d="m4 20 16-16"/><path d="M4 17v3h3M17 4h3v3"/>',
  rect:'<rect x="4" y="5" width="16" height="14" rx=".5"/>',
  ellipse:'<ellipse cx="12" cy="12" rx="8" ry="7"/>',
@@ -1206,6 +1432,7 @@ function bindUI(){
  document.querySelectorAll('[data-sg2-preset]').forEach(b=>b.onclick=()=>{state.brush=clamp(Number(b.dataset.sg2Preset),1,16);updateInspector()});
  $('sg2Invert').onclick=()=>sg2AdjustCel('invert');
  $('sg2Replace').onclick=()=>sg2AdjustCel('replace');
+ sg2BindPaintUI();
  $('sg2Tolerance').oninput=e=>$('sg2ToleranceValue').textContent=e.target.value;
  $('sg2SelectAll').onclick=sg2SelectAll;
  $('sg2InvertSelection').onclick=sg2InvertSelection;
@@ -1236,7 +1463,7 @@ function bindUI(){
   const input=e.target.closest('input,select,textarea,dialog');if(input&&!(e.ctrlKey&&['s','o','n'].includes(e.key.toLowerCase())))return;
   const k=e.key.toLowerCase(),ctrl=e.ctrlKey||e.metaKey;
   if(ctrl){const cmds={z:e.shiftKey?'redo':'undo',y:'redo',s:'save',o:'open',n:'new',c:'copy',x:'cut',v:'paste',d:'deselect',a:'select-all'};if(cmds[k]){e.preventDefault();action(cmds[k]);return}}
-  const tools={p:'pencil',e:'eraser',g:'fill',i:'eyedropper',d:'dither',l:'line',r:'rect',o:'ellipse',m:'select',j:'select-ellipse',q:'select-lasso',k:'select-polygon',w:'select-wand',v:'move',h:'hand'};
+  const tools={p:'pencil',e:'eraser',g:'fill',i:'eyedropper',d:'dither',t:'gradient',l:'line',r:'rect',o:'ellipse',m:'select',j:'select-ellipse',q:'select-lasso',k:'select-polygon',w:'select-wand',v:'move',h:'hand'};
   if(tools[k]){setTool(tools[k]);return}
   if(k===' '){state.space=true;e.preventDefault();return}
   if(k==='f'){fit();return}
