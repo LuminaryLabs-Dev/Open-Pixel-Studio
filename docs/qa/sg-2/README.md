@@ -81,3 +81,27 @@ The first command has been validated in source-level execution. The browser comm
 - v1.2 indexed/grayscale drawing parity is not yet available; SG-2 cannot pass its v1.3 RC gate until that domain matures.
 
 **SG-2 stays IN PROGRESS. Development code is integrated into `main` together with the v1.1.0 prerequisite; this does not close the SG-2 milestone or satisfy any outstanding release gates.**
+
+## Implementation pass 3 — custom brush, gradients and parity regression
+
+**Status:** Implemented as source; not a complete SG-2 milestone or production RC.
+
+- Custom brush capture from active cel and selection; RGB-preserving and foreground tint stamping; optional stylus opacity scaling. Max capture 64×64.
+- Linear and radial gradients with RGBA smooth interpolation or Bayer 2×2, 4×4 and 8×8 dithering; mask-respecting edit preview and undo integration.
+- HSV hue/saturation/value adjustments with transparency preserved and selection masking; outline effects inside/outside with 1–3 px thickness and diagonal mode.
+- Reselect and corrected Ctrl/Alt/Shift selection modifiers, with ephemeral selection state reset on document changes.
+- Synchronized split-source HTML, standalone, itch HTML5 and Windows host embedded document.
+
+### Pass 3 validation
+
+- 8 drawing-kernel, 13 selection-core, 9 selection-UI, 28 paint-core and 8 HTML/distribution regression cases passed against committed branch source: **66/66**.
+- Focused Chromium paint-module harness: **17/17** passed without page errors. This harness does **not** run the entire editor.
+- Local paint-core golden harness: **30/30** passed, including radial gradient, 2/4/8 Bayer and inside-outline.
+- Performance spot check: 24 radial/Bayer 256×256 passes in about 202 ms on Node in the sandbox; not a representative full-editor benchmark.
+- All embedded JavaScript parses and matches split-source modules; self-contained HTML5 and standalone bundles are identical.
+
+### Acceptance not yet obtained
+
+The full-editor browser smoke and historical v0.2.0 28-point regression were **not** run in this pass. No real Windows, physical pen/stylus, engine import, save/reload recovery, Firefox/WebKit, or differential comparison with Aseprite golden output was validated. These remain blockers to declaring SG-2 complete or releasing a versioned RC.
+
+For itemized parity status see [aseprite-parity-matrix.md](aseprite-parity-matrix.md). No GitHub Actions changes.
