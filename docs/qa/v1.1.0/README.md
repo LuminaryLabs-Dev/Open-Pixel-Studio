@@ -1,6 +1,6 @@
 # Open Pixel Studio v1.1.0 — Implementation pass 1
 
-**Status:** In progress on `feature/v1.1.0-export-packs`. Not yet merged, released, or published.
+**Status (updated 2026-11-08):** Source integrated into `main` as an **in-progress dependency of SG-2**, not released or published. The prior `feature/v1.1.0-export-packs` branch remains the originating development history. Release-candidate acceptance remains outstanding.
 
 ## Implemented in this branch
 
