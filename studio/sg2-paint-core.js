@@ -6,7 +6,11 @@
   else root.SG2Paint = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
+  const BAYER2 = [0,2,3,1];
   const BAYER4 = [0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5];
+  const BAYER8 = Array.from({length:64},(_,n)=>{
+    const x=n&7,y=n>>3;return 4*BAYER4[(y&3)*4+(x&3)]+BAYER2[(y>>2)*2+(x>>2)];
+  });
   const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
   const integer = (n, lo, hi) => clamp(Math.trunc(Number(n) || 0), lo, hi);
   function validate(pixels, w, h, mask) {
@@ -22,19 +26,23 @@
     return [parseInt(hex.slice(0,2),16),parseInt(hex.slice(2,4),16),parseInt(hex.slice(4,6),16),hex.length===8?parseInt(hex.slice(6,8),16):255];
   }
   function samePixel(a,b,off) { for (let k=0;k<4;k++) if (a[off+k]!==b[k]) return false; return true; }
-  function linearGradient(pixels,w,h,mask,start,end,first,second,mode='smooth') {
+  function linearGradient(pixels,w,h,mask,start,end,first,second,mode='smooth',shape='linear') {
     validate(pixels,w,h,mask);
-    if (mode !== 'smooth' && mode !== 'dither') throw new RangeError('Unknown gradient mode');
+    if (!['smooth','dither','dither2','dither4','dither8'].includes(mode)) throw new RangeError('Unknown gradient mode');
+    if (shape !== 'linear' && shape !== 'radial') throw new RangeError('Unknown gradient shape');
     const a=rgba(first),b=rgba(second),out=new Uint8ClampedArray(pixels);
     const dx=end.x-start.x,dy=end.y-start.y,den=dx*dx+dy*dy;
     if (!Number.isFinite(den)) throw new RangeError('Invalid gradient coordinates');
     let changed=0;
     for(let y=0;y<h;y++) for(let x=0;x<w;x++) {
       const n=y*w+x;if(mask&&!mask[n])continue;
-      const t=den===0?0:clamp(((x-start.x)*dx+(y-start.y)*dy)/den,0,1);
+      const t=den===0?0:shape==='radial'?clamp(Math.hypot(x-start.x,y-start.y)/Math.sqrt(den),0,1):clamp(((x-start.x)*dx+(y-start.y)*dy)/den,0,1);
       const c=new Array(4);
       if(mode==='smooth')for(let k=0;k<4;k++)c[k]=Math.round(a[k]+(b[k]-a[k])*t);
-      else {const t2=t>=1?true:t>0&&t*16>BAYER4[(y&3)*4+(x&3)];for(let k=0;k<4;k++)c[k]=t2?b[k]:a[k];}
+      else {const n=mode==='dither2'?2:mode==='dither8'?8:4;
+        const matrix=n===2?BAYER2:n===8?BAYER8:BAYER4;
+        const t2=t>=1||t>0&&t*n*n>matrix[(y%n)*n+(x%n)];
+        for(let k=0;k<4;k++)c[k]=t2?b[k]:a[k];}
       const i=n*4;if(samePixel(out,c,i))continue;
       out.set(c,i);changed++;
     }
@@ -65,9 +73,26 @@
     }
     return {data:out,changed};
   }
-  function outline(pixels,w,h,mask,color='#000000',diagonal=false,thickness=1){
+  function outline(pixels,w,h,mask,color='#000000',diagonal=false,thickness=1,place='outside'){
     validate(pixels,w,h,mask);const out=new Uint8ClampedArray(pixels),ink=rgba(color);
     thickness=integer(thickness,1,3);
+    if(!['outside','inside'].includes(place))throw new RangeError('Unknown outline placement');
+    if(place==='inside'){
+      let changed=0;
+      for(let n=0;n<w*h;n++)if(pixels[n*4+3]&&(!mask||mask[n])){
+        const x=n%w,y=(n/w)|0;let border=false;
+        for(let dy=-thickness;dy<=thickness&&!border;dy++)for(let dx=-thickness;dx<=thickness;dx++){
+          if(dx===0&&dy===0)continue;
+          if(diagonal?Math.max(Math.abs(dx),Math.abs(dy))>thickness:Math.abs(dx)+Math.abs(dy)>thickness)continue;
+          const xx=x+dx,yy=y+dy;
+          if(xx<0||yy<0||xx>=w||yy>=h||!pixels[(yy*w+xx)*4+3]){border=true;break;}
+        }
+        if(border){const o=n*4,oldAlpha=pixels[o+3];
+          if(pixels[o]!==ink[0]||pixels[o+1]!==ink[1]||pixels[o+2]!==ink[2]){out.set([ink[0],ink[1],ink[2],oldAlpha],o);changed++;}
+        }
+      }
+      return {data:out,changed};
+    }
     const originalOpaque=new Uint8Array(w*h),coverage=new Uint8Array(w*h);
     for(let n=0;n<w*h;n++)if(pixels[n*4+3]&&(!mask||mask[n]))originalOpaque[n]=coverage[n]=1;
     const neighbors=diagonal?[[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,1],[1,-1],[-1,-1]]:[[1,0],[-1,0],[0,1],[0,-1]];
