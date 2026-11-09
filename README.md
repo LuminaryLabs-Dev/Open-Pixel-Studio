@@ -17,6 +17,12 @@ The current editor's in-app title is **Nexus Pixel Studio**. **Open Pixel Studio
 
 **No publishing, version bump, code signing, or GitHub Actions workflow change is implied by the integration.** The preexisting v0.2.0 Windows package in the repository is not replaced with an SG-2 build.
 
+### SG-2 pass 3 — broader drawing toolchain
+
+Source now also contains session-only captured custom brushes (original-image or tint ink), linear/radial gradients (smooth and Bayer 2×2/4×4/8×8), selection-aware HSV effects, inside/outside outlines and Reselect. See [SG-2 Aseprite parity matrix](docs/qa/sg-2/aseprite-parity-matrix.md) for implemented, partial and absent features.
+
+**Test status:** 66/66 source-level contract/raster cases; 17/17 focused Chromium paint-module harness cases; all HTML bundles synchronized. **Not yet passed:** full editor browser regression, historical 28-case replay, real save/reload recovery, Windows runtime, stylus and external Aseprite differential parity. SG-2 remains **IN PROGRESS**, and these changes are **not** a new versioned release.
+
 ## Run it
 
 - **Windows 10/11, x64:** Extract the EXE from `archive/Nexus-Pixel-Studio-v0.2.0-Windows-Portable.zip`, or run `python tools/restore_large_assets.py` to restore the exact EXE from its losslessly compressed `.xz` file, then run it. It embeds the editor and opens an Edge/Chrome app window; it is **not** a native drawing renderer. Edge/Chrome is required. The executable is unsigned.
