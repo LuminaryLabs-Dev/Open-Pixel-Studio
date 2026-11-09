@@ -2,7 +2,7 @@
 
 Status: **IN PROGRESS**. Tracking issue: https://github.com/LuminaryLabs-Dev/Open-Pixel-Studio/issues/3
 
-This branch is based on `feature/v1.1.0-export-packs`, not `main`. It does not constitute a v1.3.0 RC or a stable release.
+Integration note (2026-11-08): SG-2 was developed on `feature/sg-2-drawing-domain`, based on `feature/v1.1.0-export-packs`. The combined source has been promoted to `main` as **unfinished development code**, not as a v1.3.0 release candidate or a new stable release.
 
 ## Implemented in this pass
 
@@ -80,4 +80,4 @@ The first command has been validated in source-level execution. The browser comm
 - Lasso/polygon performance on very long paths, multi-layer complex selections and long editing soak remain to benchmark.
 - v1.2 indexed/grayscale drawing parity is not yet available; SG-2 cannot pass its v1.3 RC gate until that domain matures.
 
-**SG-2 stays IN PROGRESS. PR #4 remains a draft, based on the unmerged v1.1.0 feature branch.**
+**SG-2 stays IN PROGRESS. Development code is integrated into `main` together with the v1.1.0 prerequisite; this does not close the SG-2 milestone or satisfy any outstanding release gates.**
