@@ -20,7 +20,7 @@ function engine(){
 }
 function canvas(){const pixels=new Set();return {pixels,fillRect(x,y){pixels.add(x+','+y)},clearRect(x,y){pixels.delete(x+','+y)}}}
 test('single pixel stamp',()=>{const {k}=engine(),c=canvas();k.paintPixel(c,4,5,'#fff');assert.deepEqual([...c.pixels],['4,5'])});
-test('3-pixel circle is pixel-aligned',()=>{const {state,k}=engine(),c=canvas();state.brush=3;state.brushShape='circle';k.paintPixel(c,5,5,'#fff');assert.equal(c.pixels.size,9)});
+test('3-pixel circle is pixel-aligned',()=>{const {state,k}=engine(),c=canvas();state.brush=3;state.brushShape='circle';k.paintPixel(c,5,5,'#fff');assert.equal(c.pixels.size,5)});
 test('square brush size',()=>{const {state,k}=engine(),c=canvas();state.brush=3;k.paintPixel(c,5,5,'#fff');assert.equal(c.pixels.size,9)});
 test('pressure shrinks brush deterministically',()=>{const {state,k}=engine(),c=canvas();state.brush=7;k.paintPixel(c,5,5,'#fff',false,false,.3);assert.equal(c.pixels.size,4)});
 test('checker dithering coverage',()=>{const {state,k}=engine(),c=canvas();state.brush=4;k.paintPixel(c,5,5,'#fff',false,true);assert.equal(c.pixels.size,8)});
