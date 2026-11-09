@@ -11,7 +11,7 @@ function sg2CurrentMask() {
   return SG2Selection.rect(project.width,project.height,{x:s.x,y:s.y},{x:s.x+s.w-1,y:s.y+s.h-1});
 }
 function sg2SetSelection(mask) {
-  if (!mask) { state.selectionMask=null;state.selection=null; }
+  if (!mask) { const prior=sg2CurrentMask();if(prior)state.lastSelection=new Uint8Array(prior);state.selectionMask=null;state.selection=null; }
   else {
     const b=SG2Selection.bounds(mask,project.width,project.height);
     state.selectionMask=mask;
@@ -37,7 +37,7 @@ function sg2DrawSelectionOverlay() {
   g.putImageData(image,0,0);
 }
 function sg2SelectionMode(e) {
-  if(e.altKey)return 'subtract';if(e.shiftKey)return 'add';if(e.ctrlKey||e.metaKey)return 'intersect';
+  if(e.ctrlKey||e.metaKey)return 'intersect';if(e.altKey)return 'subtract';if(e.shiftKey)return 'add';
   return $('sg2SelectMode').value;
 }
 function sg2SelectionShape(kind,d,p) {
@@ -153,3 +153,5 @@ function sg2CropSelection() {
 }
 function sg2SelectAll(){sg2SetSelection(SG2Selection.all(project.width,project.height));}
 function sg2InvertSelection(){const base=sg2CurrentMask();if(!base)return sg2SetSelection(new Uint8Array(project.width*project.height));const inverse=new Uint8Array(base.length);for(let i=0;i<base.length;i++)inverse[i]=base[i]?0:1;sg2SetSelection(inverse);}
+
+function sg2Reselect(){if(state.selection){toast('Selection is already active');return}if(!state.lastSelection||state.lastSelection.length!==project.width*project.height){toast('No previous selection');return}sg2SetSelection(new Uint8Array(state.lastSelection))}
