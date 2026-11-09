@@ -162,7 +162,7 @@ function setTool(tool){if(tool!=='select-polygon')sg2PolygonCancel();state.tool=
 // ----- Pixel operations: integer coordinates; no anti-aliasing -----
 function canvasPoint(e){const r=$('artboard').getBoundingClientRect();return {x:Math.floor((e.clientX-r.left)/state.zoom),y:Math.floor((e.clientY-r.top)/state.zoom)}}
 function inside(x,y){return x>=0&&y>=0&&x<project.width&&y<project.height}
-function withinSelection(x,y){const m=sg2CurrentMask();return !m||!!m[y*project.width+x]}
+function withinSelection(x,y){const s=state.selection;if(!s)return true;const m=state.selectionMask;if(m&&m.length===project.width*project.height)return !!m[y*project.width+x];return x>=s.x&&y>=s.y&&x<s.x+s.w&&y<s.y+s.h}
 
 function sg2Pressure(e){return state.pressureEnabled&&e.pointerType==='pen'&&Number(e.pressure)>0?clamp(Number(e.pressure),.15,1):1}
 function sg2DitherAllows(x,y){
