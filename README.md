@@ -6,13 +6,13 @@ The current editor's in-app title is **Nexus Pixel Studio**. **Open Pixel Studio
 
 ## Development status — SG-2 integration (2026-11-08)
 
-**Current `main` source is an in-progress development snapshot, not a newly released version.** The last documented packaged release remains **v0.2.0**. Source changes for **v1.1.0 export/recovery** and **SG-2 Drawing Domain (Aseprite-parity work)** have been integrated together; integration does **not** mean either milestone passed its release-candidate gates.
+**Current `main` source is an in-progress development snapshot, not a newly released version.** SG-2 was accepted as a finished implementation baseline; remaining parity and release qualification are tracked in [SG-3 #5](https://github.com/LuminaryLabs-Dev/Open-Pixel-Studio/issues/5). The last documented packaged release remains **v0.2.0**. Source changes for **v1.1.0 export/recovery** and **SG-2 Drawing Domain (Aseprite-parity work)** have been integrated together; integration does **not** mean either milestone passed its release-candidate gates.
 
-- **SG-2 status: IN PROGRESS.** See [drawing task #3](https://github.com/LuminaryLabs-Dev/Open-Pixel-Studio/issues/3) and [SG-2 QA notes](docs/qa/sg-2/README.md).
+- **SG-2 status: COMPLETED AS ACCEPTED BASELINE; SG-3 remains IN PROGRESS.** See [drawing task #3](https://github.com/LuminaryLabs-Dev/Open-Pixel-Studio/issues/3) and [SG-2 QA notes](docs/qa/sg-2/README.md).
 - **Implemented, development level:** pixel-perfect pencil, brush shapes/size presets, pressure-sensitive sizing, checker/Bayer dithering, undoable invert/color replace; mask-accurate rectangle, ellipse, lasso, polygon, contiguous wand and global-color selection; selection combination, masked cut/copy/delete/move, flips, 90° rotation, crop and selection shortcuts.
 - **Validation done:** 8/8 drawing-kernel goldens and 13/13 selection/mask tests against the integrated source; focused Chromium selection-module interaction passed four scenarios; browser bundle scripts parsed, and standalone/itch HTML5 builds matched.
 - **Validation *not* done:** full editor regression (including historical 28-case suite), full-editor reload recovery and IndexedDB, engine import round-trips, sustained performance stress, Firefox/WebKit, physical stylus and Windows runtime. The available Chromium interaction harness was a smaller selection-module host, **not** a full-editor pass.
-- **Open SG-2 subgoals:** saved/custom brushes, patterns, gradient/contour ink, more transforms and selection-history handling, tiled previews/snapping, HSV/outline operations and full Aseprite parity assessment. **SG-2 is not complete and v1.3.0 is not an RC.**
+- **Open SG-2 subgoals:** saved/custom brushes, patterns, gradient/contour ink, more transforms and selection-history handling, tiled previews/snapping, HSV/outline operations and full Aseprite parity assessment. **These items are transferred to SG-3; SG-2 baseline completion does not certify Aseprite parity or release readiness.**
 - **v1.1.0 status:** export wizard, asset packs and IndexedDB work are present in source as development features; full integration/release validation is still pending. See [v1.1 QA](docs/qa/v1.1.0/README.md) and [issue #1](https://github.com/LuminaryLabs-Dev/Open-Pixel-Studio/issues/1).
 
 **No publishing, version bump, code signing, or GitHub Actions workflow change is implied by the integration.** The preexisting v0.2.0 Windows package in the repository is not replaced with an SG-2 build.
@@ -22,6 +22,14 @@ The current editor's in-app title is **Nexus Pixel Studio**. **Open Pixel Studio
 Source now also contains session-only captured custom brushes (original-image or tint ink), linear/radial gradients (smooth and Bayer 2×2/4×4/8×8), selection-aware HSV effects, inside/outside outlines and Reselect. See [SG-2 Aseprite parity matrix](docs/qa/sg-2/aseprite-parity-matrix.md) for implemented, partial and absent features.
 
 **Test status:** 66/66 source-level contract/raster cases; 17/17 focused Chromium paint-module harness cases; all HTML bundles synchronized. **Not yet passed:** full editor browser regression, historical 28-case replay, real save/reload recovery, Windows runtime, stylus and external Aseprite differential parity. SG-2 remains **IN PROGRESS**, and these changes are **not** a new versioned release.
+
+### v1.2.0 — Windows packaging preparation
+
+The user has designated **v1.2.0** as the next Windows/itch package target. This is a *packaging/versioning decision*, not an assertion that the previous roadmap's indexed/grayscale color-mode work has shipped. The exact installed functionality is the SG-2 accepted baseline and earlier v1.1 export/recovery code.
+
+- Windows runtime: use `desktop/main.go` and embed the latest `desktop/editor.html` in a Go 1.23+ Windows x64 executable. The desktop host requires Edge/Chrome and does not use a native drawing renderer.
+- The versioned ZIP/EXE, source integrity evidence, browser recovery tests, full-editor regression, Windows x64 hardware verification and itch metadata are SG-3 release-qualification tasks; no official v1.2.0 release has been tagged or published.
+- Developer guide: [SG-3 tracker](https://github.com/LuminaryLabs-Dev/Open-Pixel-Studio/issues/5). Media produced only from SG-2 test harnesses must be labeled *internal development evidence* rather than advertised as real editor footage.
 
 ## Run it
 
