@@ -130,7 +130,7 @@ function renderCanvas(){const w=project.width,h=project.height;const main=$('ren
  const o=ctx(oc);o.clearRect(0,0,w,h);if(state.onion&&project.frames.length>1){o.globalAlpha=.28;o.drawImage(composeFrame((state.frame-1+project.frames.length)%project.frames.length),0,0);o.globalAlpha=.13;o.drawImage(composeFrame((state.frame+1)%project.frames.length),0,0);o.globalAlpha=1}
  const p=$('previewCanvas');if(p.width!==w||p.height!==h){p.width=w;p.height=h}const pc=ctx(p);pc.clearRect(0,0,w,h);pc.drawImage(composed,0,0);$('previewFrame').textContent=`${String(state.frame+1).padStart(2,'0')} / ${String(project.frames.length).padStart(2,'0')}`;renderCount++}
 function updateArtboard(){const w=project.width*state.zoom,h=project.height*state.zoom;const a=$('artboard');a.style.width=w+'px';a.style.height=h+'px';a.style.marginLeft=state.panX+'px';a.style.marginTop=state.panY+'px';$('zoomValue').textContent=Math.round(state.zoom*100)+'%';const g=$('pixelGrid');g.classList.toggle('on',state.grid&&state.zoom>=7);g.style.backgroundImage='linear-gradient(90deg,#0b162a41 1px, transparent 1px),linear-gradient(#0b162a41 1px, transparent 1px)';g.style.backgroundSize=`${state.zoom}px ${state.zoom}px`;g.style.backgroundPosition='0 0';updateSelectionBox()}
-function updateSelectionBox(){const s=state.selection,box=$('selectionBox');if(!s||s.w<1||s.h<1){box.hidden=true;return}box.hidden=false;box.style.left=s.x*state.zoom+'px';box.style.top=s.y*state.zoom+'px';box.style.width=s.w*state.zoom+'px';box.style.height=s.h*state.zoom+'px'}
+function updateSelectionBox(){const s=state.selection,box=$('selectionBox'),exact=!!state.selectionMask&&state.selectionMask.length===project.width*project.height;if(!s||s.w<1||s.h<1||exact){box.hidden=true}else{box.hidden=false;box.style.left=s.x*state.zoom+'px';box.style.top=s.y*state.zoom+'px';box.style.width=s.w*state.zoom+'px';box.style.height=s.h*state.zoom+'px'}sg2DrawSelectionOverlay()}
 function setZoom(value,around=null){state.zoom=clamp(Math.round(value),2,32);updateArtboard()}
 function fit(){const v=$('viewport');state.panX=0;state.panY=0;setZoom(Math.floor(Math.min((v.clientWidth-140)/project.width,(v.clientHeight-100)/project.height,16))||2)}
 function updateTimeline(){
@@ -158,11 +158,11 @@ function refreshAll(){renderCanvas();updateArtboard();updateInspector();updateTi
 function toast(message){const t=$('toast');t.textContent=message;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2500)}
 function setForeground(col){const c=normalHex(col);if(!c)return;state.fg=c;updateInspector()}
 function swapColors(){[state.fg,state.bg]=[state.bg,state.fg];updateInspector()}
-function setTool(tool){state.tool=tool;state.drag=null;updateInspector()}
+function setTool(tool){if(tool!=='select-polygon')sg2PolygonCancel();state.tool=tool;state.drag=null;updateInspector()}
 // ----- Pixel operations: integer coordinates; no anti-aliasing -----
 function canvasPoint(e){const r=$('artboard').getBoundingClientRect();return {x:Math.floor((e.clientX-r.left)/state.zoom),y:Math.floor((e.clientY-r.top)/state.zoom)}}
 function inside(x,y){return x>=0&&y>=0&&x<project.width&&y<project.height}
-function withinSelection(x,y){const s=state.selection;return !s||(x>=s.x&&y>=s.y&&x<s.x+s.w&&y<s.y+s.h)}
+function withinSelection(x,y){const m=sg2CurrentMask();return !m||!!m[y*project.width+x]}
 
 function sg2Pressure(e){return state.pressureEnabled&&e.pointerType==='pen'&&Number(e.pressure)>0?clamp(Number(e.pressure),.15,1):1}
 function sg2DitherAllows(x,y){
@@ -235,20 +235,23 @@ function handlePointerDown(e){if(e.button!==0&&e.button!==1&&e.button!==2)return
  if(!inside(point.x,point.y))return;
  target.setPointerCapture(e.pointerId);stopPlayback();
  if(state.tool==='eyedropper'){pickColor(point.x,point.y);return}
- if(state.tool==='select'){state.drag={tool:'select',start:point};state.selection=normRect(point,point);updateSelectionBox();return}
+ if(sg2SelectionTool(state.tool)){sg2SelectionDown(e,point);return}
  const l=selectedLayer();if(l.locked){toast('Unlock layer to edit pixels');return}if(!l.visible){toast('Show layer to edit pixels');return}
  const tool=state.tool,cell=selectedCel(),c=ctx(cell),color=e.button===2?state.bg:state.fg;
  if(tool==='move'){
+  if(sg2StartMove(point))return;
   if(!state.selection)state.selection={x:0,y:0,w:project.width,h:project.height};const s={...state.selection};const base=c.getImageData(0,0,project.width,project.height);const original=copyCel(cell);state.drag={tool, start:point,last:point,base,s,original,moved:false};updateSelectionBox();return;
  }
  checkpoint();const straight=e.shiftKey&&['pencil','eraser','dither'].includes(tool);const pixelPerfect=tool==='pencil'&&state.pixelPerfect&&state.brush===1&&state.brushShape==='square'&&!straight;state.drag={tool,start:point,last:point,straight,pixelPerfect,path:pixelPerfect?[{...point,pressure:sg2Pressure(e)}]:null,base:(straight||pixelPerfect||['line','rect','ellipse'].includes(tool))?c.getImageData(0,0,project.width,project.height):null,color,moved:false};
  if(tool==='fill'){floodFill(cell,point.x,point.y,color);finishDraw();return}
  if(['pencil','eraser','dither'].includes(tool)){paintPixel(c,point.x,point.y,color,tool==='eraser',tool==='dither',sg2Pressure(e));renderCanvas()}
 }
-function handlePointerMove(e){const point=canvasPoint(e);$('coordLabel').innerHTML=inside(point.x,point.y)?`x: ${point.x} &nbsp; y: ${point.y}`:'x: — &nbsp; y: —';const d=state.drag;if(!d)return;
+function handlePointerMove(e){const point=canvasPoint(e);$('coordLabel').innerHTML=inside(point.x,point.y)?`x: ${point.x} &nbsp; y: ${point.y}`:'x: — &nbsp; y: —';if(state.sg2Polygon)sg2PolygonHover({x:clamp(point.x,0,project.width-1),y:clamp(point.y,0,project.height-1)});const d=state.drag;if(!d)return;
  if(d.tool==='pan'){state.panX=d.panX+(e.clientX-d.originX);state.panY=d.panY+(e.clientY-d.originY);updateArtboard();return}
  if(d.tool==='select'){state.selection=normRect(d.start,point);updateSelectionBox();return}
  const l=selectedLayer(),c=ctx(l.cels[state.frame]);const p={x:clamp(point.x,0,project.width-1),y:clamp(point.y,0,project.height-1)};
+ if(d.tool==='sg2select'){sg2SelectionMove(p);return}
+ if(d.tool==='sg2move'){sg2MovePreview(p);return}
  if(d.tool==='move'){
   const dx=p.x-d.start.x,dy=p.y-d.start.y;savedMove(c,d,dx,dy);d.moved=dx!==0||dy!==0;d.last=p;state.selection={x:clamp(d.s.x+dx,0,project.width-1),y:clamp(d.s.y+dy,0,project.height-1),w:d.s.w,h:d.s.h};updateSelectionBox();renderCanvas();return;
  }
@@ -257,6 +260,8 @@ function handlePointerMove(e){const point=canvasPoint(e);$('coordLabel').innerHT
 }
 function savedMove(c,d,dx,dy){c.putImageData(d.base,0,0);c.clearRect(d.s.x,d.s.y,d.s.w,d.s.h);c.drawImage(d.original,d.s.x,d.s.y,d.s.w,d.s.h,d.s.x+dx,d.s.y+dy,d.s.w,d.s.h)}
 function handlePointerUp(e){const d=state.drag;if(!d)return;if(d.tool==='pan'){$('viewport').style.cursor='crosshair';state.drag=null;return}
+ if(d.tool==='sg2select'){sg2SelectionFinish(e);return}
+ if(d.tool==='sg2move'){sg2MoveFinish(e);return}
  if(d.tool==='select'){state.drag=null;updateSelectionBox();return}
  if(d.tool==='move'){if(d.moved){const c=ctx(selectedCel());c.putImageData(d.base,0,0);checkpoint();savedMove(c,d,d.last.x-d.start.x,d.last.y-d.start.y);finishDraw()}else state.drag=null;return}
  if(['pencil','eraser','dither'].includes(d.tool)){const p=canvasPoint(e);if(p.x!==d.last.x||p.y!==d.last.y)handlePointerMove(e);finishDraw();return}
@@ -278,10 +283,10 @@ function sg2AdjustCel(mode){
  if(!changedPixels){toast('No matching pixels');return}
  checkpoint();c.putImageData(image,0,0);finishDraw();toast(changedPixels+' pixels updated');
 }
-function copySelection(cut=false){const s=state.selection||{x:0,y:0,w:project.width,h:project.height};state.clipboard=ctx(selectedCel()).getImageData(s.x,s.y,s.w,s.h);if(cut){checkpoint();ctx(selectedCel()).clearRect(s.x,s.y,s.w,s.h);finishDraw()}toast(cut?'Pixels cut':'Pixels copied')}
-function pasteSelection(){if(!state.clipboard){toast('Nothing copied yet');return}if(selectedLayer().locked){toast('Unlock layer first');return}checkpoint();const clip=state.clipboard,temp=makeCanvas(clip.width,clip.height);ctx(temp).putImageData(clip,0,0);const x=state.selection?.x??Math.floor((project.width-clip.width)/2),y=state.selection?.y??Math.floor((project.height-clip.height)/2);ctx(selectedCel()).drawImage(temp,x,y);state.selection={x:clamp(x,0,project.width-1),y:clamp(y,0,project.height-1),w:Math.min(clip.width,project.width-x),h:Math.min(clip.height,project.height-y)};finishDraw();toast('Pixels pasted')}
-function deleteSelection(){if(selectedLayer().locked)return toast('Unlock layer first');checkpoint();const s=state.selection||{x:0,y:0,w:project.width,h:project.height};ctx(selectedCel()).clearRect(s.x,s.y,s.w,s.h);finishDraw()}
-function applyFlip(horizontal){if(selectedLayer().locked)return toast('Unlock layer first');checkpoint();const c=selectedCel(),original=copyCel(c),g=ctx(c);g.clearRect(0,0,c.width,c.height);g.save();if(horizontal){g.translate(c.width,0);g.scale(-1,1)}else{g.translate(0,c.height);g.scale(1,-1)}g.drawImage(original,0,0);g.restore();finishDraw()}
+function copySelection(cut=false){return sg2Copy(cut)}
+function pasteSelection(){if(!state.clipboard){toast('Nothing copied yet');return}if(selectedLayer().locked){toast('Unlock layer first');return}checkpoint();const clip=state.clipboard,temp=makeCanvas(clip.width,clip.height);ctx(temp).putImageData(clip,0,0);const x=state.selection?.x??Math.floor((project.width-clip.width)/2),y=state.selection?.y??Math.floor((project.height-clip.height)/2);ctx(selectedCel()).drawImage(temp,x,y);state.selectionMask=null;state.selection={x:clamp(x,0,project.width-1),y:clamp(y,0,project.height-1),w:Math.min(clip.width,project.width-x),h:Math.min(clip.height,project.height-y)};finishDraw();toast('Pixels pasted')}
+function deleteSelection(){return sg2Delete()}
+function applyFlip(horizontal){if(sg2CurrentMask())return sg2Transform(horizontal?'flip-h':'flip-v');if(selectedLayer().locked)return toast('Unlock layer first');checkpoint();const c=selectedCel(),original=copyCel(c),g=ctx(c);g.clearRect(0,0,c.width,c.height);g.save();if(horizontal){g.translate(c.width,0);g.scale(-1,1)}else{g.translate(0,c.height);g.scale(1,-1)}g.drawImage(original,0,0);g.restore();finishDraw()}
 // ----- Layers, animation, document actions -----
 function addFrame(duplicate=false){if(project.frames.length>=128){toast('Maximum 128 frames');return}if(!fitsMemoryBudget(project.width,project.height,project.frames.length+1,project.layers.length))return toast('Document memory limit reached');checkpoint();const current=state.frame;project.frames.splice(current+1,0,{duration:project.frames[current].duration});for(const l of project.layers){l.cels.splice(current+1,0,duplicate?copyCel(l.cels[current]):makeCanvas(project.width,project.height))}state.frame=current+1;refreshAll();changed();toast(duplicate?'Frame duplicated':'Empty frame added')}
 function deleteFrame(){if(project.frames.length===1)return toast('Keep at least one frame');checkpoint();project.frames.splice(state.frame,1);for(const l of project.layers)l.cels.splice(state.frame,1);state.frame=clamp(state.frame,0,project.frames.length-1);refreshAll();changed()}
@@ -356,7 +361,12 @@ function action(name){document.querySelectorAll('.menu-group.open').forEach(x=>x
  case 'cut':copySelection(true);break;
  case 'paste':pasteSelection();break;
  case 'delete-selection':deleteSelection();break;
- case 'deselect':state.selection=null;updateSelectionBox();break;
+ case 'select-all':sg2SelectAll();break;
+ case 'invert-selection':sg2InvertSelection();break;
+ case 'rotate-cw':sg2Transform('rotate-cw');break;
+ case 'rotate-ccw':sg2Transform('rotate-ccw');break;
+ case 'crop-selection':sg2CropSelection();break;
+ case 'deselect':sg2SetSelection(null);break;
  case 'resize':$('resizeForm').elements.width.value=project.width;$('resizeForm').elements.height.value=project.height;$('resizeDialog').showModal();break;
  case 'flip-h':applyFlip(true);break;
  case 'flip-v':applyFlip(false);break;
@@ -456,6 +466,7 @@ function bindUI(){
  document.addEventListener('pointerdown',e=>{if(!e.target.closest('.menu-group'))document.querySelectorAll('.menu-group.open').forEach(x=>x.classList.remove('open'))});
  const viewport=$('viewport');viewport.addEventListener('pointerdown',handlePointerDown);viewport.addEventListener('pointermove',handlePointerMove);viewport.addEventListener('pointerup',handlePointerUp);viewport.addEventListener('pointercancel',handlePointerUp);viewport.addEventListener('contextmenu',e=>e.preventDefault());
  viewport.addEventListener('wheel',e=>{e.preventDefault();setZoom(state.zoom+(e.deltaY<0?1:-1))},{passive:false});
+ viewport.addEventListener('dblclick',e=>{if(state.sg2Polygon){e.preventDefault();sg2PolygonFinish()}});
  $('zoomIn').onclick=()=>setZoom(state.zoom+1);$('zoomOut').onclick=()=>setZoom(state.zoom-1);$('fitBtn').onclick=fit;
  $('brushSize').oninput=e=>{state.brush=Number(e.target.value);$('brushSizeLabel').textContent=state.brush+' px';document.querySelectorAll('[data-sg2-preset]').forEach(b=>b.classList.toggle('selected',Number(b.dataset.sg2Preset)===state.brush))};
  $('sg2BrushShape').onchange=e=>{state.brushShape=e.target.value;updateInspector()};
@@ -465,6 +476,12 @@ function bindUI(){
  document.querySelectorAll('[data-sg2-preset]').forEach(b=>b.onclick=()=>{state.brush=clamp(Number(b.dataset.sg2Preset),1,16);updateInspector()});
  $('sg2Invert').onclick=()=>sg2AdjustCel('invert');
  $('sg2Replace').onclick=()=>sg2AdjustCel('replace');
+ $('sg2Tolerance').oninput=e=>$('sg2ToleranceValue').textContent=e.target.value;
+ $('sg2SelectAll').onclick=sg2SelectAll;
+ $('sg2InvertSelection').onclick=sg2InvertSelection;
+ $('sg2RotateCW').onclick=()=>sg2Transform('rotate-cw');
+ $('sg2RotateCCW').onclick=()=>sg2Transform('rotate-ccw');
+ $('sg2CropSelection').onclick=sg2CropSelection;
  $('filledToggle').onclick=()=>{state.filled=!state.filled;updateInspector()};$('symXToggle').onclick=()=>{state.symX=!state.symX;updateInspector()};$('symYToggle').onclick=()=>{state.symY=!state.symY;updateInspector()};
  $('gridToggle').onclick=()=>action('toggle-grid');$('onionToggle').onclick=()=>action('toggle-onion');
  $('colorPicker').oninput=e=>setForeground(e.target.value);$('colorHex').addEventListener('change',e=>{if(normalHex(e.target.value))setForeground(e.target.value);else updateInspector()});
@@ -488,13 +505,16 @@ function bindUI(){
  document.addEventListener('keydown',e=>{
   const input=e.target.closest('input,select,textarea,dialog');if(input&&!(e.ctrlKey&&['s','o','n'].includes(e.key.toLowerCase())))return;
   const k=e.key.toLowerCase(),ctrl=e.ctrlKey||e.metaKey;
-  if(ctrl){const cmds={z:e.shiftKey?'redo':'undo',y:'redo',s:'save',o:'open',n:'new',c:'copy',x:'cut',v:'paste',d:'deselect'};if(cmds[k]){e.preventDefault();action(cmds[k]);return}}
-  const tools={p:'pencil',e:'eraser',g:'fill',i:'eyedropper',d:'dither',l:'line',r:'rect',o:'ellipse',m:'select',v:'move',h:'hand'};
+  if(ctrl){const cmds={z:e.shiftKey?'redo':'undo',y:'redo',s:'save',o:'open',n:'new',c:'copy',x:'cut',v:'paste',d:'deselect',a:'select-all'};if(cmds[k]){e.preventDefault();action(cmds[k]);return}}
+  const tools={p:'pencil',e:'eraser',g:'fill',i:'eyedropper',d:'dither',l:'line',r:'rect',o:'ellipse',m:'select',j:'select-ellipse',q:'select-lasso',k:'select-polygon',w:'select-wand',v:'move',h:'hand'};
   if(tools[k]){setTool(tools[k]);return}
   if(k===' '){state.space=true;e.preventDefault();return}
   if(k==='f'){fit();return}
   if(k==='tab'&&(document.activeElement===viewport||document.activeElement===document.body)){e.preventDefault();if(e.shiftKey)toggleTimeline();else toggleInspector();return}
   if(k==='x'){swapColors();return}
+  if(k==='escape'&&state.sg2Polygon){sg2PolygonCancel();e.preventDefault();return}
+  if(k==='escape'){sg2SetSelection(null);e.preventDefault();return}
+  if(k==='enter'&&state.sg2Polygon){sg2PolygonFinish();e.preventDefault();return}
   if(k==='enter'){togglePlay();e.preventDefault();return}
   if(k==='['){state.brush=clamp(state.brush-1,1,16);updateInspector();return}
   if(k===']'){state.brush=clamp(state.brush+1,1,16);updateInspector();return}
