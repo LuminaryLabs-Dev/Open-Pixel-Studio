@@ -34,7 +34,7 @@ function sg2CustomStamp(c,x,y,color,eraser=false,pressure=1){
 }
 function sg2GradientPreview(d,point){
   const mask=sg2CurrentMask();
-  const result=SG2Paint.linearGradient(d.base.data,project.width,project.height,mask,d.start,point,d.color,d.altColor,state.sg2GradientMode||'smooth');
+  const result=SG2Paint.linearGradient(d.base.data,project.width,project.height,mask,d.start,point,d.color,d.altColor,state.sg2GradientMode||'smooth',state.sg2GradientType||'linear');
   ctx(selectedCel()).putImageData(new ImageData(result.data,project.width,project.height),0,0);
   return result.changed;
 }
@@ -43,7 +43,7 @@ function sg2RunPaintEffect(name){
   const w=project.width,h=project.height,pixels=ctx(selectedCel()).getImageData(0,0,w,h),mask=sg2CurrentMask();
   let result;
   if(name==='hsv')result=SG2Paint.adjustHSV(pixels.data,w,h,mask,Number($('sg2Hue').value),Number($('sg2Saturation').value),Number($('sg2Value').value));
-  else if(name==='outline')result=SG2Paint.outline(pixels.data,w,h,mask,state.fg,$('sg2OutlineDiagonal').checked,Number($('sg2OutlineThickness').value));
+  else if(name==='outline')result=SG2Paint.outline(pixels.data,w,h,mask,state.fg,$('sg2OutlineDiagonal').checked,Number($('sg2OutlineThickness').value),$('sg2OutlinePlace').value);
   else throw new Error('Unsupported paint adjustment');
   if(!result.changed){toast('No matching pixels to modify');return;}
   checkpoint();ctx(selectedCel()).putImageData(new ImageData(result.data,w,h),0,0);finishDraw();
@@ -54,6 +54,7 @@ function sg2BindPaintUI(){
   $('sg2ResetBrush').onclick=sg2ResetCustomBrush;
   $('sg2BrushInk').onchange=e=>{state.sg2InkMode=e.target.value;};
   $('sg2GradientMode').onchange=e=>{state.sg2GradientMode=e.target.value;};
+  $('sg2GradientType').onchange=e=>{state.sg2GradientType=e.target.value;};
   $('sg2ApplyHSV').onclick=()=>sg2RunPaintEffect('hsv');
   $('sg2ApplyOutline').onclick=()=>sg2RunPaintEffect('outline');
   for(const [id,out] of [['sg2Hue','sg2HueValue'],['sg2Saturation','sg2SaturationValue'],['sg2Value','sg2ValueValue']]){
