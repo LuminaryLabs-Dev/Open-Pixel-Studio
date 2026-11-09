@@ -60,7 +60,7 @@ function seedProject(){
  return result;
 }
 let project, history=[], future=[];
-let state={tool:'pencil',frame:0,layer:1,fg:'#A6E35F',bg:'#263861',brush:1,brushShape:'square',sg2CustomBrush:null,sg2InkMode:'image',sg2GradientMode:'smooth',pixelPerfect:true,pressureEnabled:true,ditherPattern:'checker',zoom:8,panX:0,panY:0,grid:false,onion:false,symX:false,symY:false,filled:false,playing:false,selection:null,clipboard:null,drag:null,space:false,dirty:false};
+let state={tool:'pencil',frame:0,layer:1,fg:'#A6E35F',bg:'#263861',brush:1,brushShape:'square',sg2CustomBrush:null,sg2InkMode:'image',sg2GradientMode:'smooth',pixelPerfect:true,pressureEnabled:true,ditherPattern:'checker',zoom:8,panX:0,panY:0,grid:false,onion:false,symX:false,symY:false,filled:false,playing:false,selection:null,lastSelection:null,clipboard:null,drag:null,space:false,dirty:false};
 const maxHistory=24, historyMemoryLimit=80*1024*1024;
 const documentMemoryLimit=96*1024*1024;
 function fitsMemoryBudget(width=project.width,height=project.height,frames=project.frames.length,layers=project.layers.length){return width*height*4*frames*layers<=documentMemoryLimit}
@@ -100,7 +100,7 @@ function selectedLayer(){return project.layers[state.layer]}
 function selectedCel(){return selectedLayer().cels[state.frame]}
 function copyCel(c){const copy=makeCanvas(c.width,c.height);ctx(copy).drawImage(c,0,0);return copy}
 function capture(){return {name:project.name,width:project.width,height:project.height,frames:project.frames.map(f=>({...f})),layers:project.layers.map(l=>({id:l.id,name:l.name,visible:l.visible,locked:l.locked,opacity:l.opacity,pixels:l.cels.map(c=>ctx(c).getImageData(0,0,c.width,c.height))})),palette:[...project.palette],paletteKey:project.paletteKey,frame:state.frame,layer:state.layer}}
-function restore(s){project={format:'NexusPixelStudio',version:1,name:s.name,width:s.width,height:s.height,frames:s.frames.map(x=>({...x})),palette:[...s.palette],paletteKey:s.paletteKey,layers:s.layers.map(l=>({id:l.id,name:l.name,visible:l.visible,locked:l.locked,opacity:l.opacity,cels:l.pixels.map(p=>{const c=makeCanvas(s.width,s.height);ctx(c).putImageData(p,0,0);return c})}))};state.frame=clamp(s.frame,0,project.frames.length-1);state.layer=clamp(s.layer,0,project.layers.length-1);state.selection=null;state.selectionMask=null;state.sg2Polygon=null;state.playing=false;refreshAll();changed()}
+function restore(s){project={format:'NexusPixelStudio',version:1,name:s.name,width:s.width,height:s.height,frames:s.frames.map(x=>({...x})),palette:[...s.palette],paletteKey:s.paletteKey,layers:s.layers.map(l=>({id:l.id,name:l.name,visible:l.visible,locked:l.locked,opacity:l.opacity,cels:l.pixels.map(p=>{const c=makeCanvas(s.width,s.height);ctx(c).putImageData(p,0,0);return c})}))};state.frame=clamp(s.frame,0,project.frames.length-1);state.layer=clamp(s.layer,0,project.layers.length-1);state.selection=null;state.selectionMask=null;state.lastSelection=null;state.sg2Polygon=null;state.playing=false;refreshAll();changed()}
 function memoryOf(s){return s.width*s.height*4*s.frames.length*s.layers.length}
 function checkpoint(){history.push(capture());future=[];while(history.length>maxHistory)history.shift();let size=history.reduce((n,s)=>n+memoryOf(s),0);while(history.length>1&&size>historyMemoryLimit){size-=memoryOf(history.shift())}updateUndoButtons()}
 function undo(){if(!history.length)return;future.push(capture());restore(history.pop());updateUndoButtons();toast('Undo applied')}
@@ -122,7 +122,7 @@ async function loadSerialized(data){
  const loaded={format:'NexusPixelStudio',version:1,name:String(data.name||'Imported').slice(0,60),width:data.width,height:data.height,frames:data.frames.map(f=>({duration:clamp(Number(f.duration)||125,20,5000)})),paletteKey:data.paletteKey||'CUSTOM',palette:Array.isArray(data.palette)?data.palette.map(normalHex).filter(Boolean).slice(0,256):[...PALETTES.DB32],layers:[]};
  for(const l of data.layers){if(!Array.isArray(l.cels)||l.cels.length!==loaded.frames.length)throw Error('Missing cels in layer');const next=layer(String(l.name||'Layer'),loaded.width,loaded.height,loaded.frames.length);next.id=String(l.id||id());next.visible=l.visible!==false;next.locked=!!l.locked;next.opacity=clamp(Number(l.opacity??1),0,1);
   for(let f=0;f<l.cels.length;f++){if(typeof l.cels[f]!=='string'||!l.cels[f].startsWith('data:image/png;base64,'))throw Error('Invalid cel image');const im=new Image();im.src=l.cels[f];await im.decode();if(im.width!==loaded.width||im.height!==loaded.height)throw Error('Cel dimensions mismatch');ctx(next.cels[f]).drawImage(im,0,0)}loaded.layers.push(next)}
- project=loaded;state.frame=0;state.layer=loaded.layers.length-1;state.selection=null;state.selectionMask=null;state.sg2Polygon=null;state.playing=false;history=[];future=[];refreshAll();changed();toast('Project opened')
+ project=loaded;state.frame=0;state.layer=loaded.layers.length-1;state.selection=null;state.selectionMask=null;state.lastSelection=null;state.sg2Polygon=null;state.playing=false;history=[];future=[];refreshAll();changed();toast('Project opened')
 }
 function composeFrame(index,onlyVisible=true){const out=makeCanvas(project.width,project.height),c=ctx(out);for(const l of project.layers){if(onlyVisible&&!l.visible)continue;c.globalAlpha=l.opacity;c.drawImage(l.cels[index],0,0)}c.globalAlpha=1;return out}
 function celHasPixels(canvas){const data=ctx(canvas).getImageData(0,0,canvas.width,canvas.height).data;for(let i=3;i<data.length;i+=4)if(data[i])return true;return false}
@@ -301,8 +301,8 @@ function deleteFrame(){if(project.frames.length===1)return toast('Keep at least 
 function addLayer(){if(project.layers.length>=64)return toast('Maximum 64 layers');if(!fitsMemoryBudget(project.width,project.height,project.frames.length,project.layers.length+1))return toast('Document memory limit reached');checkpoint();project.layers.splice(state.layer+1,0,layer('Layer '+(project.layers.length+1),project.width,project.height,project.frames.length));state.layer++;refreshAll();changed();toast('Layer added')}
 function deleteLayer(){if(project.layers.length===1)return toast('Keep at least one layer');checkpoint();project.layers.splice(state.layer,1);state.layer=clamp(state.layer,0,project.layers.length-1);refreshAll();changed()}
 function moveLayer(delta){const next=state.layer+delta;if(next<0||next>=project.layers.length)return;checkpoint();[project.layers[state.layer],project.layers[next]]=[project.layers[next],project.layers[state.layer]];state.layer=next;refreshAll();changed()}
-function resizeCanvas(w,h){if(w===project.width&&h===project.height)return;if(!fitsMemoryBudget(w,h,project.frames.length,project.layers.length))return toast('New canvas would exceed memory limit');checkpoint();for(const l of project.layers)l.cels=l.cels.map(c=>{const out=makeCanvas(w,h);ctx(out).drawImage(c,0,0);return out});project.width=w;project.height=h;state.selection=null;state.selectionMask=null;state.sg2Polygon=null;refreshAll();fit();changed();toast(`Canvas resized to ${w} × ${h}`)}
-function newDocument(w,h,name,white){project=blankProject(w,h,name,white);history=[];future=[];state.frame=0;state.layer=0;state.selection=null;state.selectionMask=null;state.sg2Polygon=null;state.panX=state.panY=0;stopPlayback();refreshAll();fit();changed();toast('New sprite created')}
+function resizeCanvas(w,h){if(w===project.width&&h===project.height)return;if(!fitsMemoryBudget(w,h,project.frames.length,project.layers.length))return toast('New canvas would exceed memory limit');checkpoint();for(const l of project.layers)l.cels=l.cels.map(c=>{const out=makeCanvas(w,h);ctx(out).drawImage(c,0,0);return out});project.width=w;project.height=h;state.selection=null;state.selectionMask=null;state.lastSelection=null;state.sg2Polygon=null;refreshAll();fit();changed();toast(`Canvas resized to ${w} × ${h}`)}
+function newDocument(w,h,name,white){project=blankProject(w,h,name,white);history=[];future=[];state.frame=0;state.layer=0;state.selection=null;state.selectionMask=null;state.lastSelection=null;state.sg2Polygon=null;state.panX=state.panY=0;stopPlayback();refreshAll();fit();changed();toast('New sprite created')}
 function togglePlay(){state.playing=!state.playing;animationLast=performance.now();animationTime=0;updateInspector()}
 function updateTimelineCursor(){
  document.querySelectorAll('#timelineGrid .frame-header').forEach((node,index)=>node.classList.toggle('active',index===state.frame));
@@ -371,6 +371,7 @@ function action(name){document.querySelectorAll('.menu-group.open').forEach(x=>x
  case 'delete-selection':deleteSelection();break;
  case 'select-all':sg2SelectAll();break;
  case 'invert-selection':sg2InvertSelection();break;
+ case 'reselect':sg2Reselect();break;
  case 'rotate-cw':sg2Transform('rotate-cw');break;
  case 'rotate-ccw':sg2Transform('rotate-ccw');break;
  case 'crop-selection':sg2CropSelection();break;
@@ -515,7 +516,7 @@ function bindUI(){
  document.addEventListener('keydown',e=>{
   const input=e.target.closest('input,select,textarea,dialog');if(input&&!(e.ctrlKey&&['s','o','n'].includes(e.key.toLowerCase())))return;
   const k=e.key.toLowerCase(),ctrl=e.ctrlKey||e.metaKey;
-  if(ctrl){const cmds={z:e.shiftKey?'redo':'undo',y:'redo',s:'save',o:'open',n:'new',c:'copy',x:'cut',v:'paste',d:'deselect',a:'select-all'};if(cmds[k]){e.preventDefault();action(cmds[k]);return}}
+  if(ctrl){if(e.shiftKey&&k==='d'){e.preventDefault();action('reselect');return}if(e.shiftKey&&k==='i'){e.preventDefault();action('invert-selection');return}const cmds={z:e.shiftKey?'redo':'undo',y:'redo',s:'save',o:'open',n:'new',c:'copy',x:'cut',v:'paste',d:'deselect',a:'select-all'};if(cmds[k]){e.preventDefault();action(cmds[k]);return}}
   const tools={p:'pencil',e:'eraser',g:'fill',i:'eyedropper',d:'dither',t:'gradient',l:'line',r:'rect',o:'ellipse',m:'select',j:'select-ellipse',q:'select-lasso',k:'select-polygon',w:'select-wand',v:'move',h:'hand'};
   if(tools[k]){setTool(tools[k]);return}
   if(k===' '){state.space=true;e.preventDefault();return}
