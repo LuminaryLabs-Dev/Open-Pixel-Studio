@@ -4,6 +4,19 @@
 
 The current editor's in-app title is **Nexus Pixel Studio**. **Open Pixel Studio** is the public media and repository name; the application UI has not been renamed. This archive combines the editor, distribution binaries, sample projects, historical development packages, QA evidence and the launch media pack.
 
+## Development status — SG-2 integration (2026-11-08)
+
+**Current `main` source is an in-progress development snapshot, not a newly released version.** The last documented packaged release remains **v0.2.0**. Source changes for **v1.1.0 export/recovery** and **SG-2 Drawing Domain (Aseprite-parity work)** have been integrated together; integration does **not** mean either milestone passed its release-candidate gates.
+
+- **SG-2 status: IN PROGRESS.** See [drawing task #3](https://github.com/LuminaryLabs-Dev/Open-Pixel-Studio/issues/3) and [SG-2 QA notes](docs/qa/sg-2/README.md).
+- **Implemented, development level:** pixel-perfect pencil, brush shapes/size presets, pressure-sensitive sizing, checker/Bayer dithering, undoable invert/color replace; mask-accurate rectangle, ellipse, lasso, polygon, contiguous wand and global-color selection; selection combination, masked cut/copy/delete/move, flips, 90° rotation, crop and selection shortcuts.
+- **Validation done:** 8/8 drawing-kernel goldens and 13/13 selection/mask tests against the integrated source; focused Chromium selection-module interaction passed four scenarios; browser bundle scripts parsed, and standalone/itch HTML5 builds matched.
+- **Validation *not* done:** full editor regression (including historical 28-case suite), full-editor reload recovery and IndexedDB, engine import round-trips, sustained performance stress, Firefox/WebKit, physical stylus and Windows runtime. The available Chromium interaction harness was a smaller selection-module host, **not** a full-editor pass.
+- **Open SG-2 subgoals:** saved/custom brushes, patterns, gradient/contour ink, more transforms and selection-history handling, tiled previews/snapping, HSV/outline operations and full Aseprite parity assessment. **SG-2 is not complete and v1.3.0 is not an RC.**
+- **v1.1.0 status:** export wizard, asset packs and IndexedDB work are present in source as development features; full integration/release validation is still pending. See [v1.1 QA](docs/qa/v1.1.0/README.md) and [issue #1](https://github.com/LuminaryLabs-Dev/Open-Pixel-Studio/issues/1).
+
+**No publishing, version bump, code signing, or GitHub Actions workflow change is implied by the integration.** The preexisting v0.2.0 Windows package in the repository is not replaced with an SG-2 build.
+
 ## Run it
 
 - **Windows 10/11, x64:** Extract the EXE from `archive/Nexus-Pixel-Studio-v0.2.0-Windows-Portable.zip`, or run `python tools/restore_large_assets.py` to restore the exact EXE from its losslessly compressed `.xz` file, then run it. It embeds the editor and opens an Edge/Chrome app window; it is **not** a native drawing renderer. Edge/Chrome is required. The executable is unsigned.
